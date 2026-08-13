@@ -15,7 +15,7 @@ Future<void> main() async {
   await Hive.initFlutter();
 
   final database = AppDatabase();
-  await database.purgeExpiredTrash();
+  await database.trashDao.purgeExpiredTrash();
 
   runApp(
     ProviderScope(

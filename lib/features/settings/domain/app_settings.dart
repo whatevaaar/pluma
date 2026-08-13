@@ -21,7 +21,7 @@ abstract class AppSettings with _$AppSettings {
     @Default(500) int dailyWordTarget,
     @Default(true) bool typographicQuotes,
     @Default(true) bool autocorrect,
-    @Default(false) bool typwriterMode,
+    @Default(false) bool typewriterMode,
     @Default(true) bool showWordCount,
   }) = _AppSettings;
 

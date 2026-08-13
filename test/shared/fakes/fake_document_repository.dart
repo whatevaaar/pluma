@@ -10,10 +10,7 @@ class FakeDocumentRepository implements DocumentRepository {
   final _projects = <String, Project>{};
 
   @override
-  Stream<List<Document>> watchAll({
-    String? projectId,
-    SortOrder order = SortOrder.updatedDesc,
-  }) {
+  Stream<List<Document>> watchAll({String? projectId}) {
     return Stream.value(
       _docs.values
           .where((d) => !d.isDeleted)

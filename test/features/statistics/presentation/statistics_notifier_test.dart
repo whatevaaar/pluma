@@ -73,7 +73,11 @@ void main() {
 
     test('recordSession increments totalWords in watchStats stream', () async {
       final fake = FakeStatisticsRepository();
-      await fake.recordSession(wordsDelta: 200, durationSeconds: 300);
+      await fake.recordSession(
+        documentId: 'test-doc',
+        wordsDelta: 200,
+        durationSeconds: 300,
+      );
 
       final stats = await fake.watchStats().first;
       expect(stats.dailyWordCount, 200);

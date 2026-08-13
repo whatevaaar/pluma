@@ -1,11 +1,14 @@
+import 'package:pluma/core/constants/app_constants.dart';
+import 'package:pluma/core/database/app_database.dart';
 import 'package:pluma/core/extensions/datetime_ext.dart';
-import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 import 'package:pluma/features/statistics/data/statistics_dao.dart';
 import 'package:pluma/features/statistics/domain/daily_stats.dart';
 import 'package:pluma/features/statistics/domain/statistics_repository.dart';
 import 'package:pluma/features/statistics/domain/streak_calculator.dart' as streak;
+import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'statistics_repository_impl.g.dart';
 
@@ -31,14 +34,6 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
       final currentStreak = streak.computeCurrentStreak(activeDates, todayKey);
       final longestStreak = streak.computeLongestStreak(activeDates);
 
-      final cutoffKey = DateTime.now()
-          .subtract(const Duration(days: 365))
-          .toDateKey;
-      final heatmap = <String, int>{
-        for (final r in rows)
-          if (r.date.compareTo(cutoffKey) >= 0) r.date: r.wordsWritten,
-      };
-
       final totalWords = rows.fold(0, (sum, r) => sum + r.wordsWritten);
       final totalDaysActive = activeDates.length;
       final averageDaily =
@@ -55,24 +50,42 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
         bestDay: bestDay,
         bestSession: bestSession,
         averageDaily: averageDaily,
-        heatmapData: heatmap,
+        heatmapData: const {},
       );
     });
   }
 
   @override
   Future<void> recordSession({
+    required String documentId,
     required int wordsDelta,
     required int durationSeconds,
+    DateTime? startedAt,
   }) async {
     if (wordsDelta <= 0 && durationSeconds < 30) return;
+    final words = wordsDelta < 0 ? 0 : wordsDelta;
     final dateKey = DateTime.now().toDateKey;
-    final minutes = (durationSeconds / 60).ceil().clamp(0, durationSeconds);
-    await _dao.upsertToday(
-      dateKey: dateKey,
-      wordsDelta: wordsDelta.clamp(0, wordsDelta),
-      minutes: minutes,
-    );
+    final minutes = (durationSeconds / 60).ceil();
+    final start = startedAt ??
+        DateTime.now().subtract(Duration(seconds: durationSeconds));
+
+    await Future.wait([
+      _dao.upsertToday(
+        dateKey: dateKey,
+        wordsDelta: words,
+        minutes: minutes,
+      ),
+      _dao.insertSession(
+        WritingSessionsCompanion.insert(
+          id: const Uuid().v4(),
+          documentId: documentId,
+          wordsWritten: Value(words),
+          durationSeconds: Value(durationSeconds),
+          startedAt: start,
+          endedAt: Value(DateTime.now()),
+        ),
+      ),
+    ]);
   }
 
   @override
@@ -82,32 +95,12 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
     final rows = await _dao.getRange(from, to);
     return {for (final r in rows) r.date: r.wordsWritten};
   }
-
-  @override
-  Future<int> computeCurrentStreak() async {
-    final rows = await _dao.getRange('0000-01-01', DateTime.now().toDateKey);
-    final active = rows.where((r) => r.wordsWritten > 0).map((r) => r.date).toList();
-    return streak.computeCurrentStreak(active, DateTime.now().toDateKey);
-  }
-
-  @override
-  Future<int> computeLongestStreak() async {
-    final rows = await _dao.getRange('0000-01-01', DateTime.now().toDateKey);
-    final active = rows.where((r) => r.wordsWritten > 0).map((r) => r.date).toList();
-    return streak.computeLongestStreak(active);
-  }
-
-  @override
-  Future<int> computeBestDay() => _dao.getBestDay();
-
-  @override
-  Future<int> computeBestSession() => _dao.getBestSession();
 }
 
 @riverpod
 StatisticsRepository statisticsRepository(Ref ref) {
   final dao = ref.watch(statisticsDaoProvider);
-  final dailyTarget =
-      ref.watch(settingsProvider).value?.dailyWordTarget ?? 500;
+  final dailyTarget = ref.watch(settingsProvider).value?.dailyWordTarget ??
+      AppConstants.defaultDailyWordTarget;
   return StatisticsRepositoryImpl(dao, dailyTarget);
 }

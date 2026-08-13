@@ -146,18 +146,6 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
-  // Purge documents in the trash for longer than [retentionDays].
-  // Called once on startup — no background job needed.
-  Future<void> purgeExpiredTrash({int retentionDays = 30}) async {
-    final cutoff = DateTime.now().subtract(Duration(days: retentionDays));
-    await (delete(documents)
-          ..where(
-            (d) =>
-                d.isDeleted.equals(true) &
-                d.deletedAt.isSmallerThanValue(cutoff),
-          ))
-        .go();
-  }
 }
 
 QueryExecutor _openConnection() {

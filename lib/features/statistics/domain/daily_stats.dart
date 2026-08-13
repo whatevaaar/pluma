@@ -31,20 +31,6 @@ abstract class WritingStats with _$WritingStats {
 
   const WritingStats._();
 
-  factory WritingStats.empty(int dailyTarget) => WritingStats(
-        totalWords: 0,
-        currentStreak: 0,
-        longestStreak: 0,
-        dailyWordCount: 0,
-        dailyTarget: dailyTarget,
-        todaySessions: 0,
-        totalDaysActive: 0,
-        bestDay: 0,
-        bestSession: 0,
-        averageDaily: 0,
-        heatmapData: {},
-      );
-
   /// Completion ratio toward daily target, 0.0–1.0.
   double get dailyCompletionRatio {
     if (dailyTarget <= 0) return 0;

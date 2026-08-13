@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:pluma/core/database/app_database.dart';
+import 'package:pluma/features/documents/data/document_row_ext.dart';
 import 'package:pluma/features/documents/data/documents_dao.dart';
 import 'package:pluma/features/documents/data/projects_dao.dart';
 import 'package:pluma/features/documents/domain/document.dart';
@@ -19,41 +20,37 @@ class DocumentRepositoryImpl implements DocumentRepository {
   // --- Documents ---
 
   @override
-  Stream<List<Document>> watchAll({
-    String? projectId,
-    SortOrder order = SortOrder.updatedDesc,
-  }) {
-    return _docsDao.watchActive(projectId: projectId).map(
-          (rows) => rows.map(_mapDocument).toList()
-            ..sort(_comparatorFor(order)),
-        );
+  Stream<List<Document>> watchAll({String? projectId}) {
+    return _docsDao
+        .watchActive(projectId: projectId)
+        .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   @override
   Stream<List<Document>> watchRecent({int limit = 10}) {
-    return _docsDao.watchRecent(limit).map(
-          (rows) => rows.map(_mapDocument).toList(),
-        );
+    return _docsDao
+        .watchRecent(limit)
+        .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   @override
   Stream<List<Document>> watchFavorites() {
-    return _docsDao.watchFavorites().map(
-          (rows) => rows.map(_mapDocument).toList(),
-        );
+    return _docsDao
+        .watchFavorites()
+        .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   @override
   Future<Document?> findById(String id) async {
     final row = await _docsDao.findById(id);
-    return row == null ? null : _mapDocument(row);
+    return row?.toDomain();
   }
 
   @override
   Future<List<Document>> search(String query) async {
     if (query.trim().isEmpty) return [];
     final rows = await _docsDao.searchFullText(query.trim());
-    return rows.map(_mapDocument).toList();
+    return rows.map((r) => r.toDomain()).toList();
   }
 
   @override
@@ -65,7 +62,7 @@ class DocumentRepositoryImpl implements DocumentRepository {
         id: id,
         projectId: Value(projectId),
         title: title ?? '',
-        content: r'{"ops":[{"insert":"\n"}]}', // empty Quill document
+        content: r'{"ops":[{"insert":"\n"}]}',
         plainText: '',
         createdAt: now,
         updatedAt: now,
@@ -133,9 +130,9 @@ class DocumentRepositoryImpl implements DocumentRepository {
 
   @override
   Stream<List<Project>> watchProjects({bool includeArchived = false}) {
-    return _projectsDao.watchAll(includeArchived: includeArchived).map(
-          (rows) => rows.map(_mapProject).toList(),
-        );
+    return _projectsDao
+        .watchAll(includeArchived: includeArchived)
+        .map((rows) => rows.map(_mapProject).toList());
   }
 
   @override
@@ -179,22 +176,6 @@ class DocumentRepositoryImpl implements DocumentRepository {
 
   // --- Mappers ---
 
-  Document _mapDocument(DocumentRow row) => Document(
-        id: row.id,
-        projectId: row.projectId,
-        title: row.title,
-        content: row.content,
-        plainText: row.plainText,
-        wordCount: row.wordCount,
-        charCount: row.charCount,
-        isFavorite: row.isFavorite,
-        isDeleted: row.isDeleted,
-        deletedAt: row.deletedAt,
-        targetWordCount: row.targetWordCount,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      );
-
   Project _mapProject(ProjectRow row) => Project(
         id: row.id,
         name: row.name,
@@ -204,16 +185,6 @@ class DocumentRepositoryImpl implements DocumentRepository {
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       );
-
-  Comparator<Document> _comparatorFor(SortOrder order) => switch (order) {
-        SortOrder.updatedDesc => (a, b) => b.updatedAt.compareTo(a.updatedAt),
-        SortOrder.updatedAsc => (a, b) => a.updatedAt.compareTo(b.updatedAt),
-        SortOrder.createdDesc => (a, b) => b.createdAt.compareTo(a.createdAt),
-        SortOrder.titleAsc => (a, b) =>
-            a.displayTitle.compareTo(b.displayTitle),
-        SortOrder.wordCountDesc => (a, b) =>
-            b.wordCount.compareTo(a.wordCount),
-      };
 }
 
 @riverpod

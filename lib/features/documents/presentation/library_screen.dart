@@ -208,7 +208,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   void _filterByProject(BuildContext context, Project project) {
-    // TODO(pluma): Fase 2+ — push project detail screen
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Próximamente')),
+    );
   }
 
   void _onMenuAction(

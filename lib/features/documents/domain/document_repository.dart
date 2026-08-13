@@ -6,10 +6,7 @@ import 'package:pluma/features/documents/domain/project.dart';
 abstract interface class DocumentRepository {
   // --- Documents ---
 
-  Stream<List<Document>> watchAll({
-    String? projectId,
-    SortOrder order = SortOrder.updatedDesc,
-  });
+  Stream<List<Document>> watchAll({String? projectId});
 
   Stream<List<Document>> watchRecent({int limit = 10});
 

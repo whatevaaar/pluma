@@ -124,7 +124,6 @@ class EditorNotifier extends _$EditorNotifier {
       plainText: plain,
       wordCount: wc,
       charCount: cc,
-      wordsDelta: delta,
     );
 
     state = AsyncData(
@@ -170,11 +169,14 @@ class EditorNotifier extends _$EditorNotifier {
 
   Future<void> _saveAndRecord() async {
     await _saveNow();
-    final delta = state.value?.sessionWordsDelta ?? 0;
+    final current = state.value;
+    final delta = current?.sessionWordsDelta ?? 0;
     final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
     await _statsRepo.recordSession(
+      documentId: current?.document.id ?? '',
       wordsDelta: delta,
       durationSeconds: elapsed,
+      startedAt: _sessionStart,
     );
   }
 }

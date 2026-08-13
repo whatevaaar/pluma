@@ -60,4 +60,12 @@ class FakeTrashRepository implements TrashRepository {
   Future<void> emptyTrash() async {
     docs.removeWhere((_, d) => d.isDeleted);
   }
+
+  @override
+  Future<void> purgeExpiredTrash() async {
+    final cutoff = DateTime.now().subtract(const Duration(days: 30));
+    docs.removeWhere(
+      (_, d) => d.isDeleted && (d.deletedAt?.isBefore(cutoff) ?? false),
+    );
+  }
 }

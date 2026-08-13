@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:pluma/core/constants/app_constants.dart';
 import 'package:pluma/core/database/app_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -39,6 +40,19 @@ class TrashDao extends DatabaseAccessor<AppDatabase> with _$TrashDaoMixin {
 
   Future<void> emptyTrash() {
     return (delete(documents)..where((d) => d.isDeleted.equals(true))).go();
+  }
+
+  Future<void> purgeExpiredTrash({
+    int retentionDays = AppConstants.trashRetentionDays,
+  }) {
+    final cutoff = DateTime.now().subtract(Duration(days: retentionDays));
+    return (delete(documents)
+          ..where(
+            (d) =>
+                d.isDeleted.equals(true) &
+                d.deletedAt.isSmallerThanValue(cutoff),
+          ))
+        .go();
   }
 }
 

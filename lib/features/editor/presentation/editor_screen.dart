@@ -235,18 +235,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
       );
     }
 
-    // Typewriter mode: keep cursor centered vertically
-    if (state.typewriterModeEnabled) {
-      state.controller.addListener(() {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_scrollController.hasClients) {
-            Scrollable.maybeOf(context)?.position;
-            // Scroll to keep cursor in the middle of the screen
-          }
-        });
-      });
-    }
-
     return editor;
   }
 

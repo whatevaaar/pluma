@@ -10,4 +10,6 @@ abstract interface class TrashRepository {
   Future<void> deletePermanently(String documentId);
 
   Future<void> emptyTrash();
+
+  Future<void> purgeExpiredTrash();
 }

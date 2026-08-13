@@ -39,6 +39,8 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<List<DocumentRow>> searchFullText(String query) async {
+    final sanitized = _sanitizeFts(query);
+    if (sanitized.isEmpty) return [];
     // FTS5 query via raw SQL — Drift doesn't model virtual tables natively
     final results = await customSelect(
       '''
@@ -48,13 +50,21 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase>
       ORDER BY rank
       LIMIT 50
       ''',
-      variables: [Variable.withString(query)],
+      variables: [Variable.withString(sanitized)],
       readsFrom: {documents},
     ).get();
 
     return results
         .map((row) => DocumentRow.fromJson(row.data))
         .toList();
+  }
+
+  // Wraps each whitespace-separated token in FTS5 phrase quotes so special
+  // characters (", *, OR, AND, NOT, parentheses) cannot break the query.
+  String _sanitizeFts(String query) {
+    final tokens =
+        query.trim().split(RegExp(r'\s+')).where((t) => t.isNotEmpty);
+    return tokens.map((t) => '"${t.replaceAll('"', '""')}"').join(' ');
   }
 
   Future<String> insert(DocumentsCompanion companion) async {

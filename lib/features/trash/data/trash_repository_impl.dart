@@ -1,4 +1,4 @@
-import 'package:pluma/core/database/app_database.dart';
+import 'package:pluma/features/documents/data/document_row_ext.dart';
 import 'package:pluma/features/documents/domain/document.dart';
 import 'package:pluma/features/trash/data/trash_dao.dart';
 import 'package:pluma/features/trash/domain/trash_repository.dart';
@@ -14,7 +14,7 @@ class TrashRepositoryImpl implements TrashRepository {
   @override
   Stream<List<Document>> watchDeleted() {
     return _dao.watchDeleted().map(
-          (rows) => rows.map(_map).toList(),
+          (rows) => rows.map((r) => r.toDomain()).toList(),
         );
   }
 
@@ -38,21 +38,10 @@ class TrashRepositoryImpl implements TrashRepository {
     return _dao.emptyTrash();
   }
 
-  Document _map(DocumentRow row) => Document(
-        id: row.id,
-        projectId: row.projectId,
-        title: row.title,
-        content: row.content,
-        plainText: row.plainText,
-        wordCount: row.wordCount,
-        charCount: row.charCount,
-        isFavorite: row.isFavorite,
-        isDeleted: row.isDeleted,
-        deletedAt: row.deletedAt,
-        targetWordCount: row.targetWordCount,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      );
+  @override
+  Future<void> purgeExpiredTrash() {
+    return _dao.purgeExpiredTrash();
+  }
 }
 
 @riverpod

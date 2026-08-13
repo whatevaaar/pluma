@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:pluma/core/database/app_database.dart';
+import 'package:pluma/features/documents/data/document_row_ext.dart';
 import 'package:pluma/features/documents/data/documents_dao.dart';
 import 'package:pluma/features/documents/domain/document.dart';
 import 'package:pluma/features/editor/domain/editor_repository.dart';
@@ -15,22 +16,7 @@ class EditorRepositoryImpl implements EditorRepository {
   @override
   Future<Document?> load(String documentId) async {
     final row = await _dao.findById(documentId);
-    if (row == null) return null;
-    return Document(
-      id: row.id,
-      projectId: row.projectId,
-      title: row.title,
-      content: row.content,
-      plainText: row.plainText,
-      wordCount: row.wordCount,
-      charCount: row.charCount,
-      isFavorite: row.isFavorite,
-      isDeleted: row.isDeleted,
-      deletedAt: row.deletedAt,
-      targetWordCount: row.targetWordCount,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    );
+    return row?.toDomain();
   }
 
   @override
@@ -41,7 +27,6 @@ class EditorRepositoryImpl implements EditorRepository {
     required String plainText,
     required int wordCount,
     required int charCount,
-    int wordsDelta = 0,
   }) {
     return _dao.upsert(
       DocumentsCompanion(

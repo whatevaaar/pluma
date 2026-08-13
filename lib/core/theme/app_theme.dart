@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../../features/settings/domain/app_settings.dart';
-import 'app_colors.dart';
-import 'app_text_styles.dart';
+import 'package:pluma/core/theme/app_colors.dart';
+import 'package:pluma/core/theme/app_text_styles.dart';
+import 'package:pluma/features/settings/domain/app_settings.dart';
 
 /// Builds Material 3 ThemeData for light and dark modes.
 ///
@@ -83,7 +82,7 @@ abstract final class AppTheme {
         titleTextStyle: AppTextStyles.uiTitle.copyWith(color: onSurface),
       ),
       textTheme: _buildTextTheme(onSurface, onSurfaceVariant, settings),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceVariant,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -106,17 +105,14 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        },
       ),
     );
   }
@@ -126,18 +122,26 @@ abstract final class AppTheme {
     Color onSurfaceVariant,
     AppSettings settings,
   ) {
-    // UI chrome always uses Inter; editor font is configured per-user in settings
+    // UI chrome always uses Inter; editor font is per-user in settings
     return TextTheme(
       headlineLarge: AppTextStyles.uiHeadline.copyWith(color: onSurface),
-      headlineMedium: AppTextStyles.uiHeadline.copyWith(color: onSurface, fontSize: 20),
+      headlineMedium: AppTextStyles.uiHeadline.copyWith(
+        color: onSurface,
+        fontSize: 20,
+      ),
       titleLarge: AppTextStyles.uiTitle.copyWith(color: onSurface),
-      titleMedium: AppTextStyles.uiTitle.copyWith(color: onSurface, fontSize: 15),
+      titleMedium: AppTextStyles.uiTitle.copyWith(
+        color: onSurface,
+        fontSize: 15,
+      ),
       bodyLarge: AppTextStyles.uiBody.copyWith(color: onSurface),
       bodyMedium: AppTextStyles.uiBody.copyWith(color: onSurfaceVariant),
       bodySmall: AppTextStyles.uiCaption.copyWith(color: onSurfaceVariant),
       labelLarge: AppTextStyles.uiLabel.copyWith(color: onSurface),
       labelMedium: AppTextStyles.uiLabel.copyWith(color: onSurfaceVariant),
-      labelSmall: AppTextStyles.wordCountBadge.copyWith(color: onSurfaceVariant),
+      labelSmall: AppTextStyles.wordCountBadge.copyWith(
+        color: onSurfaceVariant,
+      ),
     );
   }
 }

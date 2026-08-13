@@ -1,5 +1,6 @@
 abstract final class AppConstants {
-  // Autosave debounce — evita writes excesivos a Drift mientras el usuario escribe
+  // Autosave debounce — evita writes excesivos a Drift mientras el usuario
+  // escribe
   static const autosaveDebounceDuration = Duration(seconds: 3);
 
   // Sesión de escritura: si la app está en background más de este tiempo,
@@ -9,7 +10,8 @@ abstract final class AppConstants {
   // Documentos en papelera se purgan permanentemente después de este período
   static const trashRetentionDays = 30;
 
-  // Umbral de palabras para considerar un documento "grande" (requiere lazy rendering)
+  // Umbral de palabras para considerar un documento "grande" (requiere lazy
+  // rendering)
   static const largeDocumentWordThreshold = 4000;
 
   // Nombre de la Hive box para preferencias del usuario
@@ -18,6 +20,7 @@ abstract final class AppConstants {
   // Objetivo diario por defecto (palabras)
   static const defaultDailyWordTarget = 500;
 
-  // Velocidad media de lectura en palabras por minuto (para estimated read time)
+  // Velocidad media de lectura en palabras por minuto (para estimated read
+  // time)
   static const wordsPerMinuteReading = 200;
 }

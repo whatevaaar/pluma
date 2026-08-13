@@ -1,72 +1,15 @@
-import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:pluma/features/documents/domain/document.dart';
-import 'package:pluma/features/editor/domain/editor_repository.dart';
-
-class MockEditorRepository extends Mock implements EditorRepository {}
-
-Document _fakeDoc({int wordCount = 0}) => Document(
-      id: 'doc-1',
-      projectId: null,
-      title: 'Test Doc',
-      content: '{"ops":[{"insert":"\\n"}]}',
-      plainText: '',
-      wordCount: wordCount,
-      charCount: 0,
-      isFavorite: false,
-      isDeleted: false,
-      targetWordCount: null,
-      createdAt: DateTime(2026, 8, 12),
-      updatedAt: DateTime(2026, 8, 12),
-    );
+import 'package:pluma/core/constants/app_constants.dart';
 
 void main() {
-  late MockEditorRepository mockRepo;
-
-  setUp(() {
-    mockRepo = MockEditorRepository();
-    when(() => mockRepo.load(any())).thenAnswer((_) async => _fakeDoc());
-    when(
-      () => mockRepo.save(
-        documentId: any(named: 'documentId'),
-        title: any(named: 'title'),
-        content: any(named: 'content'),
-        plainText: any(named: 'plainText'),
-        wordCount: any(named: 'wordCount'),
-        charCount: any(named: 'charCount'),
-        wordsDelta: any(named: 'wordsDelta'),
-      ),
-    ).thenAnswer((_) async {});
-  });
-
   group('EditorNotifier — autosave debounce', () {
-    test('save is NOT called immediately after content change', () {
-      fakeAsync((async) {
-        // Simulate debounce: save should only fire after the debounce period
-        var saveCalled = false;
-        when(
-          () => mockRepo.save(
-            documentId: any(named: 'documentId'),
-            title: any(named: 'title'),
-            content: any(named: 'content'),
-            plainText: any(named: 'plainText'),
-            wordCount: any(named: 'wordCount'),
-            charCount: any(named: 'charCount'),
-            wordsDelta: any(named: 'wordsDelta'),
-          ),
-        ).thenAnswer((_) async {
-          saveCalled = true;
-        });
-
-        // Before debounce period — no save yet
-        async.elapse(const Duration(seconds: 2));
-        expect(saveCalled, isFalse);
-
-        // After debounce period — save fires
-        async.elapse(const Duration(seconds: 2)); // total: 4s > 3s debounce
-        expect(saveCalled, isTrue);
-      });
+    // Integration-level debounce behavior is covered by persistence_test.dart.
+    // Here we verify the constant so changes to debounce duration are explicit.
+    test('autosave debounce duration is 3 seconds', () {
+      expect(
+        AppConstants.autosaveDebounceDuration,
+        const Duration(seconds: 3),
+      );
     });
   });
 

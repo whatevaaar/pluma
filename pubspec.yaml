@@ -7,70 +7,45 @@ environment:
   sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
+  drift: ^2.21.0
+  file_picker: ^12.0.0-beta.7
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-
-  # Editor WYSIWYG — MIT, activo Mayo 2026, comunidad más grande
   flutter_quill: ^11.5.1
-
-  # Persistencia principal — MIT, FTS5, streams reactivos, in-memory testing
-  drift: ^2.21.0
-  sqlite3_flutter_libs: ^0.5.0
-  path_provider: ^2.1.5
-
-  # Preferencias ligeras (theme, font size, last doc) — Apache-2.0
+  flutter_riverpod: ^3.4.2
+  freezed_annotation: ^3.1.0
+  go_router: ^17.5.0
+  google_fonts: ^8.2.1
   hive_ce: ^2.9.0
   hive_ce_flutter: ^2.2.0
-
-  # State management — MIT, 42% menos boilerplate que BLoC, DI integrado
-  flutter_riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
-
-  # Navegación — BSD-3, Flutter team, type-safe
-  go_router: ^14.6.3
-
-  # Modelos inmutables — MIT, copyWith, pattern matching
-  freezed_annotation: ^2.4.4
+  intl: ^0.20.3
   json_annotation: ^4.9.0
-
-  # Export / Import / Share
-  pdf: ^3.13.0        # Apache-2.0 — PDF generation 100% local
-  printing: ^5.13.2   # Apache-2.0 — PDF preview + print nativo
-  share_plus: ^10.1.4 # BSD-3 — OS share sheet
-  file_picker: ^8.3.7 # MIT — import .txt/.md
-
-  # UI — Apache-2.0, fonts bundled (NO CDN en prod)
-  google_fonts: ^6.2.1
-
-  # i18n — BSD-3, Dart team
-  intl: ^0.19.0
-
-  # UUID para IDs — MIT
+  path: ^1.9.0
+  path_provider: ^2.1.5
+  pdf: ^3.13.0
+  printing: ^5.13.2
+  riverpod_annotation: ^4.0.6
+  share_plus: ^13.3.0
+  sqlite3_flutter_libs: ^0.6.0+eol
   uuid: ^4.5.1
 
 dev_dependencies:
+  alchemist: any
+  build_runner: ^2.4.13
+  drift_dev: ^2.28.0
+  fake_async: ^1.3.3
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
-
-  # Codegen
-  build_runner: ^2.4.13
-  drift_dev: ^2.21.0
-  riverpod_generator: ^2.6.1
-  freezed: ^2.5.7
-  json_serializable: ^6.8.0
-
-  # Testing — mocking sin codegen
+  freezed: ^4.0.0-dev.3
+  integration_test:
+    sdk: flutter
+  json_serializable: ^6.9.5
   mocktail: ^1.0.4
-  # Timer testing determinístico — evita sleep en tests
-  fake_async: ^1.3.3
-  # Golden tests (golden_toolkit está abandonado desde 2024)
-  alchemist: ^0.10.1
-
-  # Linting
-  very_good_analysis: ^6.0.0
-  flutter_lints: ^5.0.0
+  riverpod_generator: ^4.0.8
+  very_good_analysis: ^10.3.0
 
 flutter:
   uses-material-design: true

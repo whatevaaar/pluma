@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_text_styles.dart';
+import 'package:pluma/core/theme/app_text_styles.dart';
 
 /// Compact bottom bar showing word count, character count, and autosave status.
 class WordCountBar extends StatelessWidget {
   const WordCountBar({
-    super.key,
     required this.wordCount,
     required this.charCount,
     required this.isSaving,
+    super.key,
     this.targetWordCount,
   });
 
@@ -40,7 +40,10 @@ class WordCountBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(_formatCount(wordCount, 'palabra', 'palabras'), style: labelStyle),
+          Text(
+            _formatCount(wordCount, 'palabra', 'palabras'),
+            style: labelStyle,
+          ),
           const SizedBox(width: 12),
           Text('$charCount car.', style: labelStyle),
           if (hasTarget) ...[

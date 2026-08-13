@@ -1,15 +1,15 @@
 import 'package:drift/drift.dart';
+import 'package:pluma/core/database/app_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/database/app_database.dart';
 
 part 'documents_dao.g.dart';
 
 @DriftAccessor(tables: [Documents, Projects])
-class DocumentsDao extends DatabaseAccessor<AppDatabase> with _$DocumentsDaoMixin {
-  DocumentsDao(super.db);
+class DocumentsDao extends DatabaseAccessor<AppDatabase>
+    with _$DocumentsDaoMixin {
+  DocumentsDao(super.attachedDatabase);
 
-  Stream<List<Document>> watchActive({String? projectId}) {
+  Stream<List<DocumentRow>> watchActive({String? projectId}) {
     final query = select(documents)
       ..where((d) => d.isDeleted.equals(false));
     if (projectId != null) {
@@ -19,7 +19,7 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase> with _$DocumentsDaoMixi
     return query.watch();
   }
 
-  Stream<List<Document>> watchRecent(int limit) {
+  Stream<List<DocumentRow>> watchRecent(int limit) {
     return (select(documents)
           ..where((d) => d.isDeleted.equals(false))
           ..orderBy([(d) => OrderingTerm.desc(d.updatedAt)])
@@ -27,18 +27,18 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase> with _$DocumentsDaoMixi
         .watch();
   }
 
-  Stream<List<Document>> watchFavorites() {
+  Stream<List<DocumentRow>> watchFavorites() {
     return (select(documents)
           ..where((d) => d.isDeleted.equals(false) & d.isFavorite.equals(true))
           ..orderBy([(d) => OrderingTerm.desc(d.updatedAt)]))
         .watch();
   }
 
-  Future<Document?> findById(String id) {
+  Future<DocumentRow?> findById(String id) {
     return (select(documents)..where((d) => d.id.equals(id))).getSingleOrNull();
   }
 
-  Future<List<Document>> searchFullText(String query) async {
+  Future<List<DocumentRow>> searchFullText(String query) async {
     // FTS5 query via raw SQL — Drift doesn't model virtual tables natively
     final results = await customSelect(
       '''
@@ -53,7 +53,7 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase> with _$DocumentsDaoMixi
     ).get();
 
     return results
-        .map((row) => Document.fromJson(row.data))
+        .map((row) => DocumentRow.fromJson(row.data))
         .toList();
   }
 
@@ -80,4 +80,5 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase> with _$DocumentsDaoMixi
 }
 
 @riverpod
-DocumentsDao documentsDao(Ref ref) => ref.watch(appDatabaseProvider).documentsDao;
+DocumentsDao documentsDao(Ref ref) =>
+    ref.watch(appDatabaseProvider).documentsDao;

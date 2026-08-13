@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
-import 'app.dart';
-import 'core/database/app_database.dart';
+import 'package:pluma/app.dart';
+import 'package:pluma/core/database/app_database.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +15,7 @@ Future<void> main() async {
   await Hive.initFlutter();
 
   final database = AppDatabase();
+  await database.purgeExpiredTrash();
 
   runApp(
     ProviderScope(

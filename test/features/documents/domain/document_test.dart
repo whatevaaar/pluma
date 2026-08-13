@@ -9,7 +9,6 @@ Document _doc({
 }) =>
     Document(
       id: 'test-id',
-      projectId: null,
       title: title,
       content: '',
       plainText: '',
@@ -17,9 +16,9 @@ Document _doc({
       charCount: 0,
       isFavorite: isFavorite,
       isDeleted: false,
-      targetWordCount: targetWordCount,
       createdAt: DateTime(2026, 8, 12),
       updatedAt: DateTime(2026, 8, 12),
+      targetWordCount: targetWordCount,
     );
 
 void main() {
@@ -51,7 +50,7 @@ void main() {
     });
 
     test('returns fallback for empty title', () {
-      expect(_doc(title: '').displayTitle, 'Sin título');
+      expect(_doc().displayTitle, 'Sin título');
     });
 
     test('returns fallback for whitespace-only title', () {

@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'daily_stats.freezed.dart';
 
 @freezed
-class DailyStats with _$DailyStats {
+abstract class DailyStats with _$DailyStats {
   const factory DailyStats({
     required String date, // "YYYY-MM-DD"
     required int wordsWritten,
@@ -13,7 +13,7 @@ class DailyStats with _$DailyStats {
 }
 
 @freezed
-class WritingStats with _$WritingStats {
+abstract class WritingStats with _$WritingStats {
   const factory WritingStats({
     required int totalWords,
     required int currentStreak,
@@ -31,15 +31,7 @@ class WritingStats with _$WritingStats {
 
   const WritingStats._();
 
-  /// Completion ratio toward daily target, 0.0–1.0.
-  double get dailyCompletionRatio {
-    if (dailyTarget <= 0) return 0.0;
-    return (dailyWordCount / dailyTarget).clamp(0.0, 1.0);
-  }
-
-  bool get dailyTargetReached => dailyWordCount >= dailyTarget && dailyTarget > 0;
-
-  static WritingStats empty(int dailyTarget) => WritingStats(
+  factory WritingStats.empty(int dailyTarget) => WritingStats(
         totalWords: 0,
         currentStreak: 0,
         longestStreak: 0,
@@ -52,4 +44,13 @@ class WritingStats with _$WritingStats {
         averageDaily: 0,
         heatmapData: {},
       );
+
+  /// Completion ratio toward daily target, 0.0–1.0.
+  double get dailyCompletionRatio {
+    if (dailyTarget <= 0) return 0;
+    return (dailyWordCount / dailyTarget).clamp(0.0, 1.0);
+  }
+
+  bool get dailyTargetReached =>
+      dailyWordCount >= dailyTarget && dailyTarget > 0;
 }

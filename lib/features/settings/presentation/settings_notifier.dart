@@ -1,8 +1,7 @@
+import 'package:pluma/features/settings/data/settings_repository_impl.dart';
+import 'package:pluma/features/settings/domain/app_settings.dart';
+import 'package:pluma/features/settings/domain/settings_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../data/settings_repository_impl.dart';
-import '../domain/app_settings.dart';
-import '../domain/settings_repository.dart';
 
 part 'settings_notifier.g.dart';
 
@@ -16,5 +15,6 @@ class SettingsNotifier extends _$SettingsNotifier {
     yield* _repo.watchSettings();
   }
 
-  Future<void> update(AppSettings settings) => _repo.saveSettings(settings);
+  Future<void> saveSettings(AppSettings settings) =>
+      _repo.saveSettings(settings);
 }

@@ -1,15 +1,14 @@
 import 'package:drift/drift.dart';
+import 'package:pluma/core/database/app_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/database/app_database.dart';
 
 part 'trash_dao.g.dart';
 
 @DriftAccessor(tables: [Documents])
 class TrashDao extends DatabaseAccessor<AppDatabase> with _$TrashDaoMixin {
-  TrashDao(super.db);
+  TrashDao(super.attachedDatabase);
 
-  Stream<List<Document>> watchDeleted() {
+  Stream<List<DocumentRow>> watchDeleted() {
     return (select(documents)
           ..where((d) => d.isDeleted.equals(true))
           ..orderBy([(d) => OrderingTerm.desc(d.deletedAt)]))
@@ -36,6 +35,10 @@ class TrashDao extends DatabaseAccessor<AppDatabase> with _$TrashDaoMixin {
 
   Future<void> deletePermanently(String id) {
     return (delete(documents)..where((d) => d.id.equals(id))).go();
+  }
+
+  Future<void> emptyTrash() {
+    return (delete(documents)..where((d) => d.isDeleted.equals(true))).go();
   }
 }
 

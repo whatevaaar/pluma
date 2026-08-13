@@ -42,3 +42,11 @@ coverage/
 *.jks
 GoogleService-Info.plist
 google-services.json
+
+# Flutter metadata
+.metadata
+
+# Archivos temporales de análisis (salida de scripts de desarrollo)
+analyze_*.txt
+lint_issues*.txt
+build_runner_out.txt

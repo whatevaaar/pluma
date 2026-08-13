@@ -1,14 +1,12 @@
 import 'package:drift/drift.dart';
+import 'package:pluma/core/database/app_database.dart';
+import 'package:pluma/features/documents/data/documents_dao.dart';
+import 'package:pluma/features/documents/data/projects_dao.dart';
+import 'package:pluma/features/documents/domain/document.dart';
+import 'package:pluma/features/documents/domain/document_repository.dart';
+import 'package:pluma/features/documents/domain/project.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
-
-import '../../../core/database/app_database.dart';
-import '../../../core/extensions/datetime_ext.dart';
-import '../domain/document.dart';
-import '../domain/document_repository.dart';
-import '../domain/project.dart';
-import 'documents_dao.dart';
-import 'projects_dao.dart';
 
 part 'document_repository_impl.g.dart';
 
@@ -26,7 +24,8 @@ class DocumentRepositoryImpl implements DocumentRepository {
     SortOrder order = SortOrder.updatedDesc,
   }) {
     return _docsDao.watchActive(projectId: projectId).map(
-          (rows) => rows.map(_mapDocument).toList()..sort(_comparatorFor(order)),
+          (rows) => rows.map(_mapDocument).toList()
+            ..sort(_comparatorFor(order)),
         );
   }
 
@@ -66,7 +65,7 @@ class DocumentRepositoryImpl implements DocumentRepository {
         id: id,
         projectId: Value(projectId),
         title: title ?? '',
-        content: '{"ops":[{"insert":"\\n"}]}', // empty Quill document
+        content: r'{"ops":[{"insert":"\n"}]}', // empty Quill document
         plainText: '',
         createdAt: now,
         updatedAt: now,
@@ -90,6 +89,29 @@ class DocumentRepositoryImpl implements DocumentRepository {
         isDeleted: Value(document.isDeleted),
         deletedAt: Value(document.deletedAt),
         targetWordCount: Value(document.targetWordCount),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  @override
+  Future<void> rename(String id, String title) {
+    return _docsDao.upsert(
+      DocumentsCompanion(
+        id: Value(id),
+        title: Value(title),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  @override
+  Future<void> softDelete(String id) {
+    return _docsDao.upsert(
+      DocumentsCompanion(
+        id: Value(id),
+        isDeleted: const Value(true),
+        deletedAt: Value(DateTime.now()),
         updatedAt: Value(DateTime.now()),
       ),
     );

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pluma/features/documents/presentation/library_screen.dart';
+import 'package:pluma/features/editor/presentation/editor_screen.dart';
+import 'package:pluma/features/settings/presentation/settings_screen.dart';
+import 'package:pluma/features/statistics/presentation/statistics_screen.dart';
+import 'package:pluma/features/trash/presentation/trash_screen.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../features/documents/presentation/library_screen.dart';
-import '../../features/editor/presentation/editor_screen.dart';
-import '../../features/settings/presentation/settings_screen.dart';
-import '../../features/statistics/presentation/statistics_screen.dart';
-import '../../features/trash/presentation/trash_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -65,7 +63,9 @@ class _AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
-      bottomNavigationBar: _BottomNav(currentPath: GoRouterState.of(context).uri.path),
+      bottomNavigationBar: _BottomNav(
+        currentPath: GoRouterState.of(context).uri.path,
+      ),
     );
   }
 }
@@ -78,9 +78,9 @@ class _BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final index = switch (currentPath) {
-      String p when p.startsWith('/library') => 0,
-      String p when p.startsWith('/statistics') => 1,
-      String p when p.startsWith('/settings') => 2,
+      final p when p.startsWith('/library') => 0,
+      final p when p.startsWith('/statistics') => 1,
+      final p when p.startsWith('/settings') => 2,
       _ => 0,
     };
 
@@ -97,9 +97,18 @@ class _BottomNav extends StatelessWidget {
         }
       },
       destinations: const [
-        NavigationDestination(icon: Icon(Icons.menu_book_outlined), label: 'Escritos'),
-        NavigationDestination(icon: Icon(Icons.bar_chart_outlined), label: 'Estadísticas'),
-        NavigationDestination(icon: Icon(Icons.settings_outlined), label: 'Ajustes'),
+        NavigationDestination(
+          icon: Icon(Icons.menu_book_outlined),
+          label: 'Escritos',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.bar_chart_outlined),
+          label: 'Estadísticas',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.settings_outlined),
+          label: 'Ajustes',
+        ),
       ],
     );
   }

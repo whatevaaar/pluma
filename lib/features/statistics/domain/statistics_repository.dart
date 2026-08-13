@@ -1,4 +1,4 @@
-import 'daily_stats.dart';
+import 'package:pluma/features/statistics/domain/daily_stats.dart';
 
 abstract interface class StatisticsRepository {
   /// Reactive stream of the full writing stats aggregate.
@@ -6,8 +6,8 @@ abstract interface class StatisticsRepository {
 
   /// Upserts daily stats for today. Called at the end of each writing session.
   ///
-  /// [wordsDelta] is the number of words added (or removed, if negative) in this
-  /// session — NOT the document's total. This preserves the count of words
+  /// [wordsDelta] is the number of words added (or removed, if negative) in
+  /// this session — NOT the document's total. Preserves the count of words
   /// written even when the user deletes text.
   Future<void> recordSession({
     required int wordsDelta,

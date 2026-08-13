@@ -1,23 +1,26 @@
-import 'dart:async';
+import 'dart:async' show Timer, unawaited;
+import 'dart:convert';
 
-import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:pluma/core/constants/app_constants.dart';
+import 'package:pluma/core/extensions/string_ext.dart';
+import 'package:pluma/features/documents/domain/document.dart';
+import 'package:pluma/features/editor/data/editor_repository_impl.dart';
+import 'package:pluma/features/editor/domain/editor_repository.dart';
+import 'package:pluma/features/statistics/data/statistics_repository_impl.dart';
+import 'package:pluma/features/statistics/domain/statistics_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/constants/app_constants.dart';
-import '../../../core/extensions/string_ext.dart';
-import '../../documents/domain/document.dart';
-import '../data/editor_repository_impl.dart';
-import '../domain/editor_repository.dart';
 
 part 'editor_notifier.freezed.dart';
 part 'editor_notifier.g.dart';
 
 @freezed
-class EditorState with _$EditorState {
+abstract class EditorState with _$EditorState {
   const factory EditorState({
     required Document document,
-    required QuillController controller,
+    required quill.QuillController controller,
     required bool isSaving,
     required bool focusModeEnabled,
     required bool typewriterModeEnabled,
@@ -31,18 +34,20 @@ class EditorState with _$EditorState {
 @riverpod
 class EditorNotifier extends _$EditorNotifier {
   late EditorRepository _repo;
+  late StatisticsRepository _statsRepo;
   Timer? _autosaveTimer;
-  // Track word count at last save to compute deltas
   int _lastSavedWordCount = 0;
+  DateTime _sessionStart = DateTime.now();
 
   @override
   Future<EditorState> build(String documentId) async {
     _repo = ref.watch(editorRepositoryProvider);
+    _statsRepo = ref.watch(statisticsRepositoryProvider);
+    _sessionStart = DateTime.now();
 
     ref.onDispose(() {
       _autosaveTimer?.cancel();
-      // Final save happens on dispose to catch any unsaved changes
-      _saveNow();
+      unawaited(_saveAndRecord());
     });
 
     final doc = await _repo.load(documentId);
@@ -50,8 +55,8 @@ class EditorNotifier extends _$EditorNotifier {
 
     _lastSavedWordCount = doc.wordCount;
 
-    final controller = _buildController(doc.content);
-    controller.addListener(_onContentChanged);
+    final controller = _buildController(doc.content)
+      ..addListener(_onContentChanged);
 
     return EditorState(
       document: doc,
@@ -64,24 +69,28 @@ class EditorNotifier extends _$EditorNotifier {
     );
   }
 
-  QuillController _buildController(String deltaJson) {
+  quill.QuillController _buildController(String deltaJson) {
     try {
-      final doc = Document.fromJson(
-        (deltaJson.isNotEmpty ? deltaJson : '{"ops":[{"insert":"\\n"}]}'),
-      );
-      return QuillController(
+      final raw = deltaJson.isNotEmpty
+          ? deltaJson
+          : r'{"ops":[{"insert":"\n"}]}';
+      final ops =
+          (jsonDecode(raw) as Map<String, dynamic>)['ops'] as List<dynamic>;
+      final doc = quill.Document.fromJson(ops);
+      return quill.QuillController(
         document: doc,
         selection: const TextSelection.collapsed(offset: 0),
       );
-    } catch (_) {
-      return QuillController.basic();
+    } on Object catch (_) {
+      return quill.QuillController.basic();
     }
   }
 
   void _onContentChanged() {
     _scheduleAutosave();
-    // Update word count reactively on every change (lightweight — uses cached plainText)
-    final plain = state.valueOrNull?.controller.document.toPlainText() ?? '';
+    // Update word count reactively on every change
+    // (lightweight — uses cached plainText)
+    final plain = state.value?.controller.document.toPlainText() ?? '';
     final count = plain.wordCount;
     state = AsyncData(
       state.requireValue.copyWith(
@@ -96,7 +105,7 @@ class EditorNotifier extends _$EditorNotifier {
   }
 
   Future<void> _saveNow() async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) return;
 
     state = AsyncData(current.copyWith(isSaving: true));
@@ -158,4 +167,14 @@ class EditorNotifier extends _$EditorNotifier {
 
   /// Force-save immediately (called before navigating away).
   Future<void> saveNow() => _saveNow();
+
+  Future<void> _saveAndRecord() async {
+    await _saveNow();
+    final delta = state.value?.sessionWordsDelta ?? 0;
+    final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
+    await _statsRepo.recordSession(
+      wordsDelta: delta,
+      durationSeconds: elapsed,
+    );
+  }
 }

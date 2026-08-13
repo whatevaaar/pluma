@@ -18,7 +18,7 @@ extension StringWordCount on String {
     return minutes < 1 ? 1 : minutes;
   }
 
-  /// Returns null if the string is empty after trimming, otherwise returns self.
+  /// Returns null if the string is empty after trimming, otherwise self.
   String? get nullIfEmpty {
     final trimmed = trim();
     return trimmed.isEmpty ? null : trimmed;

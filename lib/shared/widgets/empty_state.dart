@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_text_styles.dart';
+import 'package:pluma/core/theme/app_text_styles.dart';
 
 class EmptyState extends StatelessWidget {
   const EmptyState({
-    super.key,
     required this.title,
     required this.subtitle,
+    super.key,
     this.action,
     this.actionLabel,
   });
@@ -28,7 +28,9 @@ class EmptyState extends StatelessWidget {
           children: [
             Text(
               title,
-              style: AppTextStyles.uiTitle.copyWith(color: colorScheme.onSurface),
+              style: AppTextStyles.uiTitle.copyWith(
+                color: colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),

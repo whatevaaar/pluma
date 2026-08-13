@@ -13,7 +13,7 @@ int computeStreak(List<String> activeDates, String today) {
   final sorted = [...activeDates]..sort((a, b) => b.compareTo(a));
 
   // If today has no activity, check if yesterday does
-  int streak = 0;
+  var streak = 0;
   var cursor = today;
 
   // If today is not active, start from yesterday
@@ -42,7 +42,9 @@ String _subtractDay(String dateKey) {
     int.parse(parts[1]),
     int.parse(parts[2]),
   ).subtract(const Duration(days: 1));
-  return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  final m = dt.month.toString().padLeft(2, '0');
+  final d = dt.day.toString().padLeft(2, '0');
+  return '${dt.year}-$m-$d';
 }
 
 void main() {
@@ -88,7 +90,10 @@ void main() {
 
     test('streak does not count non-consecutive days', () {
       expect(
-        computeStreak(['2026-08-05', '2026-08-07', '2026-08-09', '2026-08-11'], '2026-08-12'),
+        computeStreak(
+          ['2026-08-05', '2026-08-07', '2026-08-09', '2026-08-11'],
+          '2026-08-12',
+        ),
         1, // only yesterday counts
       );
     });
@@ -98,7 +103,7 @@ void main() {
     test('streak-based notification fires after 25 hours without writing', () {
       fakeAsync((async) {
         var streakBroken = false;
-        final timer = async.getClock(DateTime(2026, 8, 12, 9, 0));
+        final timer = async.getClock(DateTime(2026, 8, 12, 9));
 
         // Simulate: last activity at 09:00, check 25 hours later
         async.elapse(const Duration(hours: 25));

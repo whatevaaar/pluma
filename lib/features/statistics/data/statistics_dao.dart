@@ -1,14 +1,13 @@
 import 'package:drift/drift.dart';
+import 'package:pluma/core/database/app_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/database/app_database.dart';
 
 part 'statistics_dao.g.dart';
 
 @DriftAccessor(tables: [DailyStats, WritingSessions])
 class StatisticsDao extends DatabaseAccessor<AppDatabase>
     with _$StatisticsDaoMixin {
-  StatisticsDao(super.db);
+  StatisticsDao(super.attachedDatabase);
 
   // Streams
 
@@ -77,7 +76,8 @@ class StatisticsDao extends DatabaseAccessor<AppDatabase>
         words_written = words_written + ?,
         minutes_written = minutes_written + ?,
         sessions_count = sessions_count + 1
-    ''', [dateKey, wordsDelta, minutes, wordsDelta, minutes]);
+    ''', [dateKey, wordsDelta, minutes, wordsDelta, minutes],
+    );
   }
 
   // Sessions
@@ -94,4 +94,5 @@ class StatisticsDao extends DatabaseAccessor<AppDatabase>
 }
 
 @riverpod
-StatisticsDao statisticsDao(Ref ref) => ref.watch(appDatabaseProvider).statisticsDao;
+StatisticsDao statisticsDao(Ref ref) =>
+    ref.watch(appDatabaseProvider).statisticsDao;

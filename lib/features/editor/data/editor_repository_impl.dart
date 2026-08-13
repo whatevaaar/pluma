@@ -1,18 +1,16 @@
 import 'package:drift/drift.dart';
+import 'package:pluma/core/database/app_database.dart';
+import 'package:pluma/features/documents/data/documents_dao.dart';
+import 'package:pluma/features/documents/domain/document.dart';
+import 'package:pluma/features/editor/domain/editor_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/database/app_database.dart';
-import '../../documents/data/documents_dao.dart';
-import '../../documents/domain/document.dart';
-import '../domain/editor_repository.dart';
 
 part 'editor_repository_impl.g.dart';
 
 class EditorRepositoryImpl implements EditorRepository {
-  EditorRepositoryImpl(this._dao, this._db);
+  EditorRepositoryImpl(this._dao);
 
   final DocumentsDao _dao;
-  final AppDatabase _db;
 
   @override
   Future<Document?> load(String documentId) async {
@@ -60,7 +58,5 @@ class EditorRepositoryImpl implements EditorRepository {
 }
 
 @riverpod
-EditorRepository editorRepository(Ref ref) => EditorRepositoryImpl(
-      ref.watch(documentsDaoProvider),
-      ref.watch(appDatabaseProvider),
-    );
+EditorRepository editorRepository(Ref ref) =>
+    EditorRepositoryImpl(ref.watch(documentsDaoProvider));

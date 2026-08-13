@@ -1,16 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 
-import '../../../core/theme/app_text_styles.dart';
-import '../../settings/presentation/settings_notifier.dart';
-import 'editor_notifier.dart';
-import 'widgets/word_count_bar.dart';
-import 'widgets/writing_toolbar.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' hide EditorState;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pluma/core/theme/app_text_styles.dart';
+import 'package:pluma/features/editor/presentation/editor_notifier.dart';
+import 'package:pluma/features/editor/presentation/widgets/word_count_bar.dart';
+import 'package:pluma/features/editor/presentation/widgets/writing_toolbar.dart';
+import 'package:pluma/features/settings/domain/app_settings.dart';
+import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 
 class EditorScreen extends ConsumerStatefulWidget {
-  const EditorScreen({super.key, required this.documentId});
+  const EditorScreen({required this.documentId, super.key});
 
   final String documentId;
 
@@ -45,7 +46,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      ref.read(editorNotifierProvider(widget.documentId).notifier).saveNow();
+      unawaited(
+        ref.read(editorProvider(widget.documentId).notifier).saveNow(),
+      );
     }
   }
 
@@ -58,8 +61,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
 
   @override
   Widget build(BuildContext context) {
-    final editorAsync = ref.watch(editorNotifierProvider(widget.documentId));
-    final settings = ref.watch(settingsNotifierProvider).valueOrNull;
+    final editorAsync = ref.watch(editorProvider(widget.documentId));
+    final settings = ref.watch(settingsProvider).value ?? const AppSettings();
 
     return editorAsync.when(
       loading: () => const Scaffold(
@@ -115,7 +118,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
 
   PreferredSizeWidget _buildAppBar(BuildContext context, EditorState state) {
     final notifier = ref.read(
-      editorNotifierProvider(widget.documentId).notifier,
+      editorProvider(widget.documentId).notifier,
     );
 
     return AppBar(
@@ -156,7 +159,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
         ),
         textCapitalization: TextCapitalization.sentences,
         onChanged: (value) => ref
-            .read(editorNotifierProvider(widget.documentId).notifier)
+            .read(editorProvider(widget.documentId).notifier)
             .updateTitle(value),
       ),
     );
@@ -165,21 +168,18 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   Widget _buildEditor(
     BuildContext context,
     EditorState state,
-    dynamic settings,
+    AppSettings settings,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
-    final editorFontSize = settings?.editorFontSize ?? 17.0;
-    final lineHeight = settings?.editorLineHeight ?? 1.75;
-    final columnWidth = settings?.editorColumnWidth ?? 680.0;
+    final editorFontSize = settings.editorFontSize;
+    final lineHeight = settings.editorLineHeight;
+    final columnWidth = settings.editorColumnWidth;
 
     Widget editor = QuillEditor(
       controller: state.controller,
       scrollController: _scrollController,
       focusNode: _editorFocusNode,
       config: QuillEditorConfig(
-        scrollable: true,
-        autoFocus: false,
-        expands: false,
         padding: EdgeInsets.symmetric(
           horizontal: 20,
           vertical: state.focusModeEnabled ? 60 : 16,
@@ -252,40 +252,42 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
 
   void _showDocumentOptions(BuildContext context, EditorState state) {
     final notifier = ref.read(
-      editorNotifierProvider(widget.documentId).notifier,
+      editorProvider(widget.documentId).notifier,
     );
 
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(
-                state.typewriterModeEnabled
-                    ? Icons.keyboard_outlined
-                    : Icons.vertical_align_center,
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(
+                  state.typewriterModeEnabled
+                      ? Icons.keyboard_outlined
+                      : Icons.vertical_align_center,
+                ),
+                title: Text(
+                  state.typewriterModeEnabled
+                      ? 'Desactivar modo máquina de escribir'
+                      : 'Modo máquina de escribir',
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  notifier.toggleTypewriterMode();
+                },
               ),
-              title: Text(
-                state.typewriterModeEnabled
-                    ? 'Desactivar modo máquina de escribir'
-                    : 'Modo máquina de escribir',
+              ListTile(
+                leading: const Icon(Icons.flag_outlined),
+                title: const Text('Establecer objetivo de palabras'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  // TODO(pluma): Fase 5 — implement word target dialog
+                },
               ),
-              onTap: () {
-                Navigator.pop(ctx);
-                notifier.toggleTypewriterMode();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.flag_outlined),
-              title: const Text('Establecer objetivo de palabras'),
-              onTap: () {
-                Navigator.pop(ctx);
-                // TODO Fase 5: word target dialog
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

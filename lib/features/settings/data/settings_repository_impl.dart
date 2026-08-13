@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:hive_ce/hive.dart';
+import 'package:pluma/core/constants/app_constants.dart';
+import 'package:pluma/features/settings/domain/app_settings.dart';
+import 'package:pluma/features/settings/domain/settings_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/constants/app_constants.dart';
-import '../domain/app_settings.dart';
-import '../domain/settings_repository.dart';
 
 part 'settings_repository_impl.g.dart';
 
@@ -15,7 +14,7 @@ const _settingsKey = 'settings';
 class SettingsRepositoryImpl implements SettingsRepository {
   SettingsRepositoryImpl(this._box);
 
-  final Box _box;
+  final Box<dynamic> _box;
   final _controller = StreamController<AppSettings>.broadcast();
 
   @override
@@ -43,7 +42,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
 @riverpod
 Future<SettingsRepository> settingsRepository(Ref ref) async {
-  final box = await Hive.openBox(AppConstants.settingsBoxName);
+  final box = await Hive.openBox<dynamic>(AppConstants.settingsBoxName);
   final repo = SettingsRepositoryImpl(box);
   ref.onDispose(repo.dispose);
   return repo;

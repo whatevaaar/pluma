@@ -1,4 +1,4 @@
-import 'app_settings.dart';
+import 'package:pluma/features/settings/domain/app_settings.dart';
 
 abstract interface class SettingsRepository {
   /// Emits settings on every change.

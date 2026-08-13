@@ -4,7 +4,7 @@ import 'package:pluma/core/extensions/datetime_ext.dart';
 void main() {
   group('DateTimeExt.isSameDay', () {
     test('same day returns true', () {
-      final a = DateTime(2026, 8, 12, 10, 0);
+      final a = DateTime(2026, 8, 12, 10);
       final b = DateTime(2026, 8, 12, 23, 59);
       expect(a.isSameDay(b), isTrue);
     });

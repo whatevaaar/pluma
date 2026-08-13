@@ -63,7 +63,7 @@ class FakeDocumentRepository implements DocumentRepository {
       id: id,
       projectId: projectId,
       title: title ?? '',
-      content: '{"ops":[{"insert":"\\n"}]}',
+      content: r'{"ops":[{"insert":"\n"}]}',
       plainText: '',
       wordCount: 0,
       charCount: 0,
@@ -78,6 +78,22 @@ class FakeDocumentRepository implements DocumentRepository {
   @override
   Future<void> save(Document document) async {
     _docs[document.id] = document;
+  }
+
+  @override
+  Future<void> rename(String id, String title) async {
+    final doc = _docs[id];
+    if (doc != null) {
+      _docs[id] = doc.copyWith(title: title, updatedAt: DateTime.now());
+    }
+  }
+
+  @override
+  Future<void> softDelete(String id) async {
+    final doc = _docs[id];
+    if (doc != null) {
+      _docs[id] = doc.copyWith(isDeleted: true, deletedAt: DateTime.now());
+    }
   }
 
   @override

@@ -12,7 +12,7 @@ extension DateTimeExt on DateTime {
     return isSameDay(yesterday);
   }
 
-  /// Returns a "YYYY-MM-DD" key suitable for use in DailyStats and heatmap data.
+  /// Returns a "YYYY-MM-DD" key suitable for DailyStats and heatmap data.
   String get toDateKey {
     final y = year.toString().padLeft(4, '0');
     final m = month.toString().padLeft(2, '0');

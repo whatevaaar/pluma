@@ -9,7 +9,7 @@ enum EditorFont { merriweather, georgia, jetbrainsMono }
 enum WritingTheme { default_, sepia, forest, midnight }
 
 @freezed
-class AppSettings with _$AppSettings {
+abstract class AppSettings with _$AppSettings {
   const factory AppSettings({
     @Default(ThemeMode.system) ThemeMode themeMode,
     @Default(EditorFont.merriweather) EditorFont editorFont,

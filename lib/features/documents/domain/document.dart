@@ -3,10 +3,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'document.freezed.dart';
 
 @freezed
-class Document with _$Document {
+abstract class Document with _$Document {
   const factory Document({
     required String id,
-    String? projectId,
     required String title,
     // Quill Delta JSON — authoritative format
     required String content,
@@ -16,10 +15,11 @@ class Document with _$Document {
     required int charCount,
     required bool isFavorite,
     required bool isDeleted,
-    DateTime? deletedAt,
-    int? targetWordCount,
     required DateTime createdAt,
     required DateTime updatedAt,
+    String? projectId,
+    DateTime? deletedAt,
+    int? targetWordCount,
   }) = _Document;
 
   const Document._();
@@ -28,7 +28,7 @@ class Document with _$Document {
   /// Returns 0.0 if no target is set.
   double get targetCompletion {
     final target = targetWordCount;
-    if (target == null || target <= 0) return 0.0;
+    if (target == null || target <= 0) return 0;
     return (wordCount / target).clamp(0.0, 1.0);
   }
 

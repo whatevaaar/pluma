@@ -1,4 +1,4 @@
-import '../../documents/domain/document.dart';
+import 'package:pluma/features/documents/domain/document.dart';
 
 abstract interface class EditorRepository {
   Future<Document?> load(String documentId);

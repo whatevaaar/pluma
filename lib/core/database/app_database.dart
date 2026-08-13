@@ -2,15 +2,13 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:pluma/features/documents/data/documents_dao.dart';
+import 'package:pluma/features/documents/data/projects_dao.dart';
+import 'package:pluma/features/statistics/data/statistics_dao.dart';
+import 'package:pluma/features/trash/data/trash_dao.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../features/documents/data/documents_dao.dart';
-import '../../features/documents/data/projects_dao.dart';
-import '../../features/statistics/data/statistics_dao.dart';
-import '../../features/trash/data/trash_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -18,6 +16,7 @@ part 'app_database.g.dart';
 // Table definitions
 // ---------------------------------------------------------------------------
 
+@DataClassName('ProjectRow')
 class Projects extends Table {
   TextColumn get id => text()();
   TextColumn get name => text().withLength(min: 1, max: 200)();
@@ -31,6 +30,7 @@ class Projects extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('DocumentRow')
 class Documents extends Table {
   TextColumn get id => text()();
   TextColumn get projectId => text().nullable().references(Projects, #id)();
@@ -65,7 +65,8 @@ class WritingSessions extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-// Snapshot upserted at the end of each session — drives heatmap and streak calc.
+// Snapshot upserted at the end of each session — drives heatmap and streak
+// calc.
 class DailyStats extends Table {
   // "YYYY-MM-DD" — serves as primary key and heatmap data key
   TextColumn get date => text()();
@@ -145,13 +146,15 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
-  // Purge documents that have been in the trash for longer than [retentionDays].
+  // Purge documents in the trash for longer than [retentionDays].
   // Called once on startup — no background job needed.
   Future<void> purgeExpiredTrash({int retentionDays = 30}) async {
     final cutoff = DateTime.now().subtract(Duration(days: retentionDays));
     await (delete(documents)
           ..where(
-            (d) => d.isDeleted.equals(true) & d.deletedAt.isSmallerThanValue(cutoff),
+            (d) =>
+                d.isDeleted.equals(true) &
+                d.deletedAt.isSmallerThanValue(cutoff),
           ))
         .go();
   }

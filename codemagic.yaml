@@ -1,0 +1,90 @@
+workflows:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # iOS → TestFlight
+  # Triggered on every push to main. Uploads to TestFlight automatically.
+  # ─────────────────────────────────────────────────────────────────────────
+  ios-testflight:
+    name: iOS → TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.sinanunciosnunca.pluma
+
+      # Group "app_store_credentials" must be created in
+      # Codemagic → Teams → Global variables and secrets.
+      # Required variables:
+      #   APP_STORE_CONNECT_ISSUER_ID      (from App Store Connect → Keys)
+      #   APP_STORE_CONNECT_KEY_IDENTIFIER (API key ID)
+      #   APP_STORE_CONNECT_PRIVATE_KEY    (.p8 file contents, secured)
+      #   CERTIFICATE_PRIVATE_KEY          (RSA private key, secured)
+      groups:
+        - app_store_credentials
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+
+      - name: Dart codegen (build_runner)
+        script: dart run build_runner build
+
+      - name: Flutter build iOS (release)
+        script: |
+          flutter build ios --release \
+            --build-name=0.1.0 \
+            --build-number=$BUILD_NUMBER
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration        # Uses ASC API key from env group above
+        submit_to_testflight: true
+        notify_external_testers: false   # Flip to true when ready for beta testers
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Android → APK (debug) — build rápido desde Windows también
+  # ─────────────────────────────────────────────────────────────────────────
+  android-debug:
+    name: Android APK (debug)
+    max_build_duration: 30
+    instance_type: linux_x2
+
+    environment:
+      flutter: stable
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+
+      - name: Dart codegen
+        script: dart run build_runner build
+
+      - name: Flutter build APK
+        script: flutter build apk --debug
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-debug.apk

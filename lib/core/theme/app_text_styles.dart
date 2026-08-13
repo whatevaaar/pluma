@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 /// Typography tokens.
 ///
-/// Merriweather (serif) for the writing surface — optimized for long-form reading.
-/// Inter (sans-serif) for all UI chrome (labels, buttons, navigation).
+/// Merriweather (serif) for the writing surface — optimized for long-form
+/// reading. Inter (sans-serif) for all UI chrome (labels, buttons, nav).
 abstract final class AppTextStyles {
   // --- Editor / reading surface (Merriweather) ---
 

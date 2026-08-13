@@ -1,15 +1,15 @@
 import 'package:drift/drift.dart';
+import 'package:pluma/core/database/app_database.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../core/database/app_database.dart';
 
 part 'projects_dao.g.dart';
 
 @DriftAccessor(tables: [Projects])
-class ProjectsDao extends DatabaseAccessor<AppDatabase> with _$ProjectsDaoMixin {
-  ProjectsDao(super.db);
+class ProjectsDao extends DatabaseAccessor<AppDatabase>
+    with _$ProjectsDaoMixin {
+  ProjectsDao(super.attachedDatabase);
 
-  Stream<List<Project>> watchAll({bool includeArchived = false}) {
+  Stream<List<ProjectRow>> watchAll({bool includeArchived = false}) {
     final query = select(projects);
     if (!includeArchived) {
       query.where((p) => p.isArchived.equals(false));
@@ -18,7 +18,7 @@ class ProjectsDao extends DatabaseAccessor<AppDatabase> with _$ProjectsDaoMixin 
     return query.watch();
   }
 
-  Future<Project?> findById(String id) {
+  Future<ProjectRow?> findById(String id) {
     return (select(projects)..where((p) => p.id.equals(id))).getSingleOrNull();
   }
 

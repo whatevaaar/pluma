@@ -1,0 +1,100 @@
+name: pluma
+description: A premium offline writing app. No ads. No account. No server.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Editor WYSIWYG — MIT, activo Mayo 2026, comunidad más grande
+  flutter_quill: ^11.5.1
+
+  # Persistencia principal — MIT, FTS5, streams reactivos, in-memory testing
+  drift: ^2.21.0
+  sqlite3_flutter_libs: ^0.5.0
+  path_provider: ^2.1.5
+
+  # Preferencias ligeras (theme, font size, last doc) — Apache-2.0
+  hive_ce: ^2.9.0
+  hive_ce_flutter: ^2.2.0
+
+  # State management — MIT, 42% menos boilerplate que BLoC, DI integrado
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navegación — BSD-3, Flutter team, type-safe
+  go_router: ^14.6.3
+
+  # Modelos inmutables — MIT, copyWith, pattern matching
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Export / Import / Share
+  pdf: ^3.13.0        # Apache-2.0 — PDF generation 100% local
+  printing: ^5.13.2   # Apache-2.0 — PDF preview + print nativo
+  share_plus: ^10.1.4 # BSD-3 — OS share sheet
+  file_picker: ^8.3.7 # MIT — import .txt/.md
+
+  # UI — Apache-2.0, fonts bundled (NO CDN en prod)
+  google_fonts: ^6.2.1
+
+  # i18n — BSD-3, Dart team
+  intl: ^0.19.0
+
+  # UUID para IDs — MIT
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Codegen
+  build_runner: ^2.4.13
+  drift_dev: ^2.21.0
+  riverpod_generator: ^2.6.1
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+  # Testing — mocking sin codegen
+  mocktail: ^1.0.4
+  # Timer testing determinístico — evita sleep en tests
+  fake_async: ^1.3.3
+  # Golden tests (golden_toolkit está abandonado desde 2024)
+  alchemist: ^0.10.1
+
+  # Linting
+  very_good_analysis: ^6.0.0
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/fonts/
+
+  fonts:
+    - family: Merriweather
+      fonts:
+        - asset: assets/fonts/Merriweather-Regular.ttf
+        - asset: assets/fonts/Merriweather-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Merriweather-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Merriweather-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

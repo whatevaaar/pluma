@@ -1,0 +1,44 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.g.dart
+*.freezed.dart
+
+# Codegen — regenerar con: dart run build_runner build
+# (excluir del repo para evitar conflictos de merge)
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Android
+android/.gradle/
+android/captures/
+android/local.properties
+android/key.properties
+
+# IDE
+.idea/
+.vscode/settings.json
+*.iml
+
+# macOS
+macos/Pods/
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Coverage
+coverage/
+
+# Environment (nunca committear)
+.env
+.env.local
+*.keystore
+*.jks
+GoogleService-Info.plist
+google-services.json

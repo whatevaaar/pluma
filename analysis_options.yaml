@@ -1,0 +1,25 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    missing_required_param: error
+    missing_return: error
+    invalid_null_aware_operator: error
+    unused_import: error
+    unused_local_variable: error
+    dead_code: warning
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.gr.dart"
+
+linter:
+  rules:
+    # public_member_api_docs es demasiado ruidoso para equipo pequeño
+    public_member_api_docs: false
+    # El editor usa callbacks que a veces no son async
+    avoid_void_async: false

@@ -63,6 +63,22 @@ workflows:
       - name: Test
         script: flutter test
 
+      - name: Set up keychain
+        script: keychain initialize
+
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files com.sinananunciosnunca.pluma \
+            --platform IOS \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Add certificates to keychain
+        script: keychain add-certificates
+
+      - name: Apply signing settings to Xcode project
+        script: xcode-project use-profiles
+
       - name: Flutter build IPA
         script: |
           flutter build ipa --release \

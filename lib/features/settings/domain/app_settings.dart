@@ -8,6 +8,29 @@ enum EditorFont { merriweather, georgia, jetbrainsMono }
 
 enum WritingTheme { default_, sepia, forest, midnight }
 
+extension EditorFontX on EditorFont {
+  String get fontFamily => switch (this) {
+        EditorFont.merriweather => 'Merriweather',
+        EditorFont.georgia => 'Georgia',
+        EditorFont.jetbrainsMono => 'monospace',
+      };
+
+  String get displayName => switch (this) {
+        EditorFont.merriweather => 'Merriweather',
+        EditorFont.georgia => 'Georgia',
+        EditorFont.jetbrainsMono => 'Mono',
+      };
+}
+
+extension WritingThemeX on WritingTheme {
+  String get displayName => switch (this) {
+        WritingTheme.default_ => 'Por defecto',
+        WritingTheme.sepia => 'Sepia',
+        WritingTheme.forest => 'Bosque',
+        WritingTheme.midnight => 'Noche',
+      };
+}
+
 @freezed
 abstract class AppSettings with _$AppSettings {
   const factory AppSettings({

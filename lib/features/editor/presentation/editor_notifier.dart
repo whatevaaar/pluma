@@ -9,6 +9,7 @@ import 'package:pluma/core/extensions/string_ext.dart';
 import 'package:pluma/features/documents/domain/document.dart';
 import 'package:pluma/features/editor/data/editor_repository_impl.dart';
 import 'package:pluma/features/editor/domain/editor_repository.dart';
+import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 import 'package:pluma/features/statistics/data/statistics_repository_impl.dart';
 import 'package:pluma/features/statistics/domain/statistics_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -58,12 +59,17 @@ class EditorNotifier extends _$EditorNotifier {
     final controller = _buildController(doc.content)
       ..addListener(_onContentChanged);
 
+    // Read settings once at initialization — not watched to avoid recreating
+    // the QuillController every time settings change.
+    final initialTypewriterMode =
+        ref.read(settingsProvider).value?.typewriterMode ?? false;
+
     return EditorState(
       document: doc,
       controller: controller,
       isSaving: false,
       focusModeEnabled: false,
-      typewriterModeEnabled: false,
+      typewriterModeEnabled: initialTypewriterMode,
       sessionWordsDelta: 0,
       sessionStartWordCount: doc.wordCount,
     );
@@ -159,9 +165,9 @@ class EditorNotifier extends _$EditorNotifier {
 
   void toggleTypewriterMode() {
     final current = state.requireValue;
-    state = AsyncData(
-      current.copyWith(typewriterModeEnabled: !current.typewriterModeEnabled),
-    );
+    final next = !current.typewriterModeEnabled;
+    state = AsyncData(current.copyWith(typewriterModeEnabled: next));
+    ref.read(settingsProvider.notifier).setTypewriterMode(next);
   }
 
   /// Force-save immediately (called before navigating away).

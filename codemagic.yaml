@@ -70,6 +70,7 @@ workflows:
           app-store-connect fetch-signing-files com.sinananunciosnunca.pluma \
             --platform IOS \
             --type IOS_APP_STORE \
+            --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
             --create
 
       - name: Add certificates to keychain

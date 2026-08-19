@@ -44,6 +44,8 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      groups:
+        - global
 
     triggering:
       events:
@@ -110,13 +112,6 @@ workflows:
 
     environment:
       flutter: stable
-
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
 
     scripts:
       - name: Flutter pub get

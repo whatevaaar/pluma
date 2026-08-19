@@ -69,6 +69,12 @@ workflows:
       - name: Set up keychain
         script: keychain initialize
 
+      - name: Create or fetch distribution certificate
+        script: |
+          app-store-connect create-certificate \
+            --type IOS_DISTRIBUTION \
+            --save
+
       - name: Fetch signing files
         script: |
           app-store-connect fetch-signing-files com.sinananunciosnunca.pluma \

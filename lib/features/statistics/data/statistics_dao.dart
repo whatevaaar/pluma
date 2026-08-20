@@ -17,11 +17,6 @@ class StatisticsDao extends DatabaseAccessor<AppDatabase>
         .watch();
   }
 
-  Stream<DailyStat?> watchToday(String todayKey) {
-    return (select(dailyStats)..where((s) => s.date.equals(todayKey)))
-        .watchSingleOrNull();
-  }
-
   // Queries
 
   Future<List<DailyStat>> getRange(String from, String to) {
@@ -29,22 +24,6 @@ class StatisticsDao extends DatabaseAccessor<AppDatabase>
           ..where((s) => s.date.isBetweenValues(from, to))
           ..orderBy([(s) => OrderingTerm.asc(s.date)]))
         .get();
-  }
-
-  Future<int> getTotalWords() async {
-    final result = await customSelect(
-      'SELECT COALESCE(SUM(words_written), 0) AS total FROM daily_stats',
-      readsFrom: {dailyStats},
-    ).getSingle();
-    return result.data['total'] as int;
-  }
-
-  Future<int> getTotalDaysActive() async {
-    final result = await customSelect(
-      'SELECT COUNT(*) AS count FROM daily_stats WHERE words_written > 0',
-      readsFrom: {dailyStats},
-    ).getSingle();
-    return result.data['count'] as int;
   }
 
   Future<int> getBestDay() async {
@@ -86,11 +65,6 @@ class StatisticsDao extends DatabaseAccessor<AppDatabase>
     return into(writingSessions).insert(companion);
   }
 
-  Future<void> updateSession(WritingSessionsCompanion companion) {
-    return (update(writingSessions)
-          ..where((s) => s.id.equals(companion.id.value)))
-        .write(companion);
-  }
 }
 
 @riverpod

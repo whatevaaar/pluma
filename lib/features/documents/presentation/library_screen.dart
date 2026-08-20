@@ -135,10 +135,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (_, i) {
                         final project = state.projects[i];
-                        return ProjectCard(
-                          project: project,
-                          onTap: () => _filterByProject(context, project),
-                        );
+                        return ProjectCard(project: project);
                       },
                     ),
                   ),
@@ -205,12 +202,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         context.pushNamed('editor', pathParameters: {'documentId': id}),
       );
     }
-  }
-
-  void _filterByProject(BuildContext context, Project project) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Próximamente')),
-    );
   }
 
   void _onMenuAction(

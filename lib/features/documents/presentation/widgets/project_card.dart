@@ -5,13 +5,13 @@ import 'package:pluma/features/documents/domain/project.dart';
 class ProjectCard extends StatelessWidget {
   const ProjectCard({
     required this.project,
-    required this.onTap,
     super.key,
+    this.onTap,
     this.documentCount,
   });
 
   final Project project;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final int? documentCount;
 
   @override

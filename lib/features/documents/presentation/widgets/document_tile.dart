@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:pluma/core/extensions/datetime_ext.dart';
+import 'package:pluma/core/extensions/number_ext.dart';
 import 'package:pluma/core/theme/app_colors.dart';
 import 'package:pluma/core/theme/app_text_styles.dart';
 import 'package:pluma/features/documents/domain/document.dart';
@@ -79,7 +80,7 @@ class DocumentTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  _formatWordCount(document.wordCount),
+                  document.wordCount.formatAsWordCount(),
                   style: AppTextStyles.wordCountBadge.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -133,11 +134,4 @@ class DocumentTile extends StatelessWidget {
     return '${dt.day}/${dt.month}/${dt.year}';
   }
 
-  String _formatWordCount(int count) {
-    if (count >= 1000) {
-      final k = count / 1000;
-      return '${k.toStringAsFixed(k.truncateToDouble() == k ? 0 : 1)}k pal.';
-    }
-    return '$count pal.';
-  }
 }

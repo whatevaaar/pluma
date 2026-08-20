@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pluma/core/extensions/number_ext.dart';
 import 'package:pluma/features/statistics/domain/daily_stats.dart';
 import 'package:pluma/features/statistics/presentation/statistics_notifier.dart';
 
@@ -159,7 +160,7 @@ class _GoalRing extends StatelessWidget {
             size: Size(size, size),
             painter: _RingPainter(
               ratio: ratio,
-              foreground: reached ? colorScheme.primary : colorScheme.primary,
+              foreground: colorScheme.primary,
               background: colorScheme.surfaceContainerHighest,
             ),
           ),
@@ -331,7 +332,7 @@ class _StatsGrid extends StatelessWidget {
             Expanded(
               child: _StatTile(
                 label: 'Total escrito',
-                value: _formatWords(stats.totalWords),
+                value: stats.totalWords.formatAsWords(),
               ),
             ),
             const SizedBox(width: 12),
@@ -349,14 +350,14 @@ class _StatsGrid extends StatelessWidget {
             Expanded(
               child: _StatTile(
                 label: 'Mejor día',
-                value: _formatWords(stats.bestDay),
+                value: stats.bestDay.formatAsWords(),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _StatTile(
                 label: 'Promedio diario',
-                value: _formatWords(stats.averageDaily),
+                value: stats.averageDaily.formatAsWords(),
               ),
             ),
           ],
@@ -364,19 +365,12 @@ class _StatsGrid extends StatelessWidget {
         const SizedBox(height: 12),
         _StatTile(
           label: 'Mejor sesión',
-          value: _formatWords(stats.bestSession),
+          value: stats.bestSession.formatAsWords(),
         ),
       ],
     );
   }
 
-  String _formatWords(int count) {
-    if (count >= 1000) {
-      final k = count / 1000;
-      return '${k.toStringAsFixed(k.truncateToDouble() == k ? 0 : 1)}k palabras';
-    }
-    return '$count palabras';
-  }
 }
 
 class _StatTile extends StatelessWidget {

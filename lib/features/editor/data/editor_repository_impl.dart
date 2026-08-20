@@ -27,6 +27,7 @@ class EditorRepositoryImpl implements EditorRepository {
     required String plainText,
     required int wordCount,
     required int charCount,
+    int? targetWordCount,
   }) {
     return _dao.upsert(
       DocumentsCompanion(
@@ -36,6 +37,7 @@ class EditorRepositoryImpl implements EditorRepository {
         plainText: Value(plainText),
         wordCount: Value(wordCount),
         charCount: Value(charCount),
+        targetWordCount: Value(targetWordCount),
         updatedAt: Value(DateTime.now()),
       ),
     );

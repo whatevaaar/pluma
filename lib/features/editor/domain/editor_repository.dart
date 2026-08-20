@@ -10,5 +10,6 @@ abstract interface class EditorRepository {
     required String plainText,
     required int wordCount,
     required int charCount,
+    int? targetWordCount,
   });
 }

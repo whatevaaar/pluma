@@ -11,6 +11,7 @@ import 'package:pluma/features/editor/presentation/editor_notifier.dart';
 import 'package:pluma/features/editor/presentation/widgets/word_count_bar.dart';
 import 'package:pluma/features/editor/presentation/widgets/writing_settings_sheet.dart';
 import 'package:pluma/features/editor/presentation/widgets/writing_toolbar.dart';
+import 'package:pluma/features/editor/data/document_exporter.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 
@@ -350,6 +351,57 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     return editor;
   }
 
+  void _showWordTargetDialog(BuildContext context, EditorState state) {
+    final currentTarget = state.document.targetWordCount;
+    final controller = TextEditingController(
+      text: currentTarget != null && currentTarget > 0
+          ? currentTarget.toString()
+          : '',
+    );
+    final notifier = ref.read(editorProvider(widget.documentId).notifier);
+
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Objetivo de palabras'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Número de palabras',
+              hintText: 'p. ej. 1000',
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            if (currentTarget != null && currentTarget > 0)
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  unawaited(notifier.updateTargetWordCount(null));
+                },
+                child: const Text('Quitar objetivo'),
+              ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                final text = controller.text.trim();
+                final parsed = text.isEmpty ? null : int.tryParse(text);
+                unawaited(notifier.updateTargetWordCount(parsed));
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showDocumentOptions(BuildContext context, EditorState state) {
     unawaited(
       showModalBottomSheet<void>(
@@ -371,7 +423,36 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                 title: const Text('Establecer objetivo de palabras'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  // TODO(pluma): Fase 5 — implement word target dialog
+                  _showWordTargetDialog(context, state);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.text_snippet_outlined),
+                title: const Text('Exportar como TXT'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  unawaited(DocumentExporter.exportAsTxt(state.document));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.code_outlined),
+                title: const Text('Exportar como Markdown'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  unawaited(
+                    DocumentExporter.exportAsMarkdown(
+                      state.document,
+                      state.controller,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf_outlined),
+                title: const Text('Exportar como PDF'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  unawaited(DocumentExporter.exportAsPdf(state.document));
                 },
               ),
             ],

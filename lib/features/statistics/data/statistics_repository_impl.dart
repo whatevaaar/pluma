@@ -50,7 +50,7 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
         bestDay: bestDay,
         bestSession: bestSession,
         averageDaily: averageDaily,
-        heatmapData: const {},
+        heatmapData: {for (final r in rows) r.date: r.wordsWritten},
       );
     });
   }

@@ -131,6 +131,7 @@ class EditorNotifier extends _$EditorNotifier {
       plainText: plain,
       wordCount: wc,
       charCount: cc,
+      targetWordCount: current.document.targetWordCount,
     );
 
     state = AsyncData(
@@ -169,6 +170,16 @@ class EditorNotifier extends _$EditorNotifier {
     final next = !current.typewriterModeEnabled;
     state = AsyncData(current.copyWith(typewriterModeEnabled: next));
     ref.read(settingsProvider.notifier).setTypewriterMode(next);
+  }
+
+  Future<void> updateTargetWordCount(int? target) async {
+    final current = state.requireValue;
+    state = AsyncData(
+      current.copyWith(
+        document: current.document.copyWith(targetWordCount: target),
+      ),
+    );
+    await _saveNow();
   }
 
   /// Force-save immediately (called before navigating away).

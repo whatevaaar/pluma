@@ -60,4 +60,19 @@ class SettingsNotifier extends _$SettingsNotifier {
     final s = state.value ?? const AppSettings();
     return saveSettings(s.copyWith(dailyWordTarget: target));
   }
+
+  Future<void> setTypographicQuotes(bool enabled) {
+    final s = state.value ?? const AppSettings();
+    return saveSettings(s.copyWith(typographicQuotes: enabled));
+  }
+
+  Future<void> setAutocorrect(bool enabled) {
+    final s = state.value ?? const AppSettings();
+    return saveSettings(s.copyWith(autocorrect: enabled));
+  }
+
+  Future<void> setShowWordCount(bool enabled) {
+    final s = state.value ?? const AppSettings();
+    return saveSettings(s.copyWith(showWordCount: enabled));
+  }
 }

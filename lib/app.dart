@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:pluma/core/router/app_router.dart';
@@ -23,6 +24,11 @@ class PlumaApp extends ConsumerWidget {
       themeMode: settings.themeMode,
       routerConfig: router,
       localizationsDelegates: const [
+        // Required by flutter_quill's standalone toolbar buttons: they call
+        // context.loc during build and throw MissingFlutterQuillLocalization
+        // if this delegate is absent — which renders as a blank gray bar in
+        // release mode (the default ErrorWidget).
+        FlutterQuillLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

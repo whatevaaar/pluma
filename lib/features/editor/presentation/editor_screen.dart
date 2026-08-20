@@ -190,40 +190,55 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
             body: GestureDetector(
               onTap: _onEditorTap,
               behavior: HitTestBehavior.translucent,
-              child: Column(
+              child: Stack(
                 children: [
-                  if (!focusMode)
-                    _buildTitleField(context, state, writingColors),
+                  Column(
+                    children: [
+                      if (!focusMode)
+                        _buildTitleField(context, state, writingColors),
 
-                  Expanded(
-                    child:
-                        _buildEditor(context, state, settings, writingColors),
+                      Expanded(
+                        child: _buildEditor(
+                          context,
+                          state,
+                          settings,
+                          writingColors,
+                        ),
+                      ),
+
+                      if (!focusMode) ...[
+                        WritingToolbar(
+                          controller: state.controller,
+                          backgroundColor: writingColors.appBarBackground,
+                          foregroundColor: writingColors.onBackground,
+                        ),
+                        WordCountBar(
+                          wordCount: state.document.wordCount,
+                          charCount: state.document.charCount,
+                          isSaving: state.isSaving,
+                          targetWordCount: state.document.targetWordCount,
+                          backgroundColor: writingColors.appBarBackground,
+                          foregroundColor: writingColors.onBackground,
+                        ),
+                      ],
+
+                      // Keyboard inset: expands to exactly the keyboard height
+                      // so the toolbar stack is always above the keyboard.
+                      // With resizeToAvoidBottomInset: false the body's
+                      // MediaQuery preserves the raw viewInsets, so this
+                      // SizedBox tracks
+                      // the keyboard animation frame by frame with no gray gap.
+                      SizedBox(
+                        height: MediaQuery.viewInsetsOf(context).bottom,
+                      ),
+                    ],
                   ),
 
-                  if (!focusMode) ...[
-                    WritingToolbar(
-                      controller: state.controller,
-                      backgroundColor: writingColors.appBarBackground,
-                      foregroundColor: writingColors.onBackground,
-                    ),
-                    WordCountBar(
-                      wordCount: state.document.wordCount,
-                      charCount: state.document.charCount,
-                      isSaving: state.isSaving,
-                      targetWordCount: state.document.targetWordCount,
-                      backgroundColor: writingColors.appBarBackground,
-                      foregroundColor: writingColors.onBackground,
-                    ),
-                  ],
-
-                  // Keyboard inset: expands to exactly the keyboard height so
-                  // the toolbar stack is always above the keyboard.
-                  // With resizeToAvoidBottomInset: false the body MediaQuery
-                  // preserves the raw viewInsets, so this SizedBox tracks the
-                  // keyboard animation frame by frame with no gray gap.
-                  SizedBox(
-                    height: MediaQuery.viewInsetsOf(context).bottom,
-                  ),
+                  // In focus mode the app bar and toolbar are hidden, so these
+                  // floating controls are the only way to exit focus mode and
+                  // dismiss the keyboard.
+                  if (focusMode)
+                    _buildFocusModeControls(context, writingColors),
                 ],
               ),
             ),
@@ -263,6 +278,63 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
           onPressed: () => _showDocumentOptions(context, state),
         ),
       ],
+    );
+  }
+
+  /// Floating controls shown only in focus mode: exit focus mode and hide
+  /// the keyboard. Positioned top-right, low-opacity so they stay unobtrusive
+  /// while remaining tappable.
+  Widget _buildFocusModeControls(
+    BuildContext context,
+    WritingThemeColors writingColors,
+  ) {
+    final notifier = ref.read(editorProvider(widget.documentId).notifier);
+    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final tint = writingColors.onBackground;
+
+    Widget button({
+      required IconData icon,
+      required String tooltip,
+      required VoidCallback onPressed,
+    }) {
+      return Material(
+        color: writingColors.appBarBackground.withAlpha(160),
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: IconButton(
+          icon: Icon(icon, size: 20),
+          color: tint.withAlpha(180),
+          tooltip: tooltip,
+          onPressed: onPressed,
+        ),
+      );
+    }
+
+    return Positioned(
+      top: 0,
+      right: 0,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (keyboardVisible)
+                button(
+                  icon: Icons.keyboard_hide_outlined,
+                  tooltip: 'Ocultar teclado',
+                  onPressed: _editorFocusNode.unfocus,
+                ),
+              const SizedBox(width: 8),
+              button(
+                icon: Icons.close_fullscreen_outlined,
+                tooltip: 'Salir de pantalla completa',
+                onPressed: notifier.toggleFocusMode,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

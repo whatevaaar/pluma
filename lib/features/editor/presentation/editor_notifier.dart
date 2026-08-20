@@ -50,7 +50,26 @@ class EditorNotifier extends _$EditorNotifier {
 
     ref.onDispose(() {
       _autosaveTimer?.cancel();
-      unawaited(_saveAndRecord());
+      // Capture state synchronously before Riverpod tears it down.
+      // An unawaited _saveAndRecord() would read state.value AFTER the
+      // first await, at which point the notifier is already disposed and
+      // state.value is null — making documentId empty and wordsDelta 0.
+      final current = state.value;
+      if (current != null) {
+        final docId = current.document.id;
+        final wordsDelta = current.sessionWordsDelta;
+        final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
+        unawaited(
+          _statsRepo
+              .recordSession(
+                documentId: docId,
+                wordsDelta: wordsDelta,
+                durationSeconds: elapsed,
+                startedAt: _sessionStart,
+              )
+              .catchError((_) {}),
+        );
+      }
     });
 
     final doc = await _repo.load(documentId);
@@ -195,19 +214,4 @@ class EditorNotifier extends _$EditorNotifier {
 
   /// Force-save immediately (called before navigating away).
   Future<void> saveNow() => _saveNow();
-
-  Future<void> _saveAndRecord() async {
-    try {
-      await _saveNow();
-      final current = state.value;
-      final delta = current?.sessionWordsDelta ?? 0;
-      final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
-      await _statsRepo.recordSession(
-        documentId: current?.document.id ?? '',
-        wordsDelta: delta,
-        durationSeconds: elapsed,
-        startedAt: _sessionStart,
-      );
-    } catch (_) {}
-  }
 }

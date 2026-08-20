@@ -119,7 +119,8 @@ class EditorNotifier extends _$EditorNotifier {
     final plain = current.controller.document.toPlainText();
     final wc = plain.wordCount;
     final cc = plain.charCount;
-    final deltaJson = current.controller.document.toDelta().toJson().toString();
+    final deltaJson =
+        jsonEncode({'ops': current.controller.document.toDelta().toJson()});
     final delta = wc - _lastSavedWordCount;
     _lastSavedWordCount = wc;
 
@@ -174,15 +175,17 @@ class EditorNotifier extends _$EditorNotifier {
   Future<void> saveNow() => _saveNow();
 
   Future<void> _saveAndRecord() async {
-    await _saveNow();
-    final current = state.value;
-    final delta = current?.sessionWordsDelta ?? 0;
-    final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
-    await _statsRepo.recordSession(
-      documentId: current?.document.id ?? '',
-      wordsDelta: delta,
-      durationSeconds: elapsed,
-      startedAt: _sessionStart,
-    );
+    try {
+      await _saveNow();
+      final current = state.value;
+      final delta = current?.sessionWordsDelta ?? 0;
+      final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
+      await _statsRepo.recordSession(
+        documentId: current?.document.id ?? '',
+        wordsDelta: delta,
+        durationSeconds: elapsed,
+        startedAt: _sessionStart,
+      );
+    } catch (_) {}
   }
 }

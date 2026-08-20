@@ -8,22 +8,28 @@ import 'package:flutter_quill/flutter_quill.dart';
 class WritingToolbar extends StatelessWidget {
   const WritingToolbar({
     required this.controller,
+    this.backgroundColor,
+    this.foregroundColor,
     super.key,
   });
 
   final QuillController controller;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final bgColor = backgroundColor ?? colorScheme.surface;
+    final fgColor = foregroundColor ?? colorScheme.onSurfaceVariant;
 
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: bgColor,
         border: Border(
           top: BorderSide(
-            color: colorScheme.outlineVariant,
+            color: fgColor.withAlpha(40),
             width: 0.5,
           ),
         ),
@@ -48,13 +54,13 @@ class WritingToolbar extends StatelessWidget {
               iconTheme: QuillIconTheme(
                 iconButtonSelectedData: IconButtonData(
                   style: IconButton.styleFrom(
-                    backgroundColor: colorScheme.primaryContainer,
-                    foregroundColor: colorScheme.primary,
+                    backgroundColor: fgColor.withAlpha(30),
+                    foregroundColor: fgColor,
                   ),
                 ),
                 iconButtonUnselectedData: IconButtonData(
                   style: IconButton.styleFrom(
-                    foregroundColor: colorScheme.onSurfaceVariant,
+                    foregroundColor: fgColor.withAlpha(153),
                   ),
                 ),
               ),

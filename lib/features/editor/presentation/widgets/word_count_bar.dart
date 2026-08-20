@@ -10,18 +10,24 @@ class WordCountBar extends StatelessWidget {
     required this.isSaving,
     super.key,
     this.targetWordCount,
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   final int wordCount;
   final int charCount;
   final bool isSaving;
   final int? targetWordCount;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final bgColor = backgroundColor ?? colorScheme.surface;
+    final fgColor = foregroundColor ?? colorScheme.onSurfaceVariant;
     final labelStyle = AppTextStyles.uiCaption.copyWith(
-      color: colorScheme.onSurfaceVariant,
+      color: fgColor.withAlpha(180),
     );
 
     final hasTarget = targetWordCount != null && targetWordCount! > 0;
@@ -33,9 +39,9 @@ class WordCountBar extends StatelessWidget {
       height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: bgColor,
         border: Border(
-          top: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
+          top: BorderSide(color: fgColor.withAlpha(40), width: 0.5),
         ),
       ),
       child: Row(
@@ -52,7 +58,7 @@ class WordCountBar extends StatelessWidget {
               width: 60,
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: colorScheme.outlineVariant,
+                backgroundColor: fgColor.withAlpha(40),
                 color: progress! >= 1.0
                     ? colorScheme.primary
                     : colorScheme.primary.withAlpha(160),
@@ -76,7 +82,7 @@ class WordCountBar extends StatelessWidget {
                   height: 10,
                   child: CircularProgressIndicator(
                     strokeWidth: 1.5,
-                    color: colorScheme.onSurfaceVariant,
+                    color: fgColor.withAlpha(180),
                   ),
                 ),
                 const SizedBox(width: 6),

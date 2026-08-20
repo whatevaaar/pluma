@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide EditorState;
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pluma/core/theme/app_text_styles.dart';
 import 'package:pluma/core/theme/writing_theme_colors.dart';
@@ -158,33 +159,53 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
 
         final focusMode = state.focusModeEnabled;
 
-        return Scaffold(
-          backgroundColor: writingColors.background,
-          appBar: focusMode
-              ? null
-              : _buildAppBar(context, state, writingColors),
-          body: GestureDetector(
-            onTap: _onEditorTap,
-            behavior: HitTestBehavior.translucent,
-            child: Column(
-              children: [
-                if (!focusMode)
-                  _buildTitleField(context, state, writingColors),
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) async {
+            if (didPop) return;
+            final notifier =
+                ref.read(editorProvider(widget.documentId).notifier);
+            try {
+              await notifier.saveNow();
+            } finally {
+              if (context.mounted) context.pop();
+            }
+          },
+          child: Scaffold(
+            backgroundColor: writingColors.background,
+            appBar: focusMode
+                ? null
+                : _buildAppBar(context, state, writingColors),
+            body: GestureDetector(
+              onTap: _onEditorTap,
+              behavior: HitTestBehavior.translucent,
+              child: Column(
+                children: [
+                  if (!focusMode)
+                    _buildTitleField(context, state, writingColors),
 
-                Expanded(
-                  child: _buildEditor(context, state, settings, writingColors),
-                ),
-
-                if (!focusMode) ...[
-                  WritingToolbar(controller: state.controller),
-                  WordCountBar(
-                    wordCount: state.document.wordCount,
-                    charCount: state.document.charCount,
-                    isSaving: state.isSaving,
-                    targetWordCount: state.document.targetWordCount,
+                  Expanded(
+                    child:
+                        _buildEditor(context, state, settings, writingColors),
                   ),
+
+                  if (!focusMode) ...[
+                    WritingToolbar(
+                      controller: state.controller,
+                      backgroundColor: writingColors.appBarBackground,
+                      foregroundColor: writingColors.onBackground,
+                    ),
+                    WordCountBar(
+                      wordCount: state.document.wordCount,
+                      charCount: state.document.charCount,
+                      isSaving: state.isSaving,
+                      targetWordCount: state.document.targetWordCount,
+                      backgroundColor: writingColors.appBarBackground,
+                      foregroundColor: writingColors.onBackground,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -203,8 +224,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
       backgroundColor: writingColors.appBarBackground,
       leading: BackButton(
         onPressed: () async {
-          await notifier.saveNow();
-          if (context.mounted) Navigator.of(context).pop();
+          try {
+            await notifier.saveNow();
+          } finally {
+            if (context.mounted) context.pop();
+          }
         },
       ),
       actions: [

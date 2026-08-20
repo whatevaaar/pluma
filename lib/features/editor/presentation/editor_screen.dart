@@ -174,6 +174,16 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
           },
           child: Scaffold(
             backgroundColor: writingColors.background,
+            // resizeToAvoidBottomInset: false prevents the Scaffold from
+            // shrinking the body during the keyboard slide-in animation.
+            // When true (the default), the body resize and the native iOS
+            // keyboard animation run on different timers, leaving a strip of
+            // the iOS system background (gray) visible between the Flutter
+            // content and the keyboard for the duration of the transition.
+            // The keyboard inset is instead handled explicitly via the
+            // SizedBox at the bottom of the Column, driven directly by
+            // MediaQuery.viewInsetsOf and tracking the keyboard frame by frame.
+            resizeToAvoidBottomInset: false,
             appBar: focusMode
                 ? null
                 : _buildAppBar(context, state, writingColors),
@@ -205,6 +215,15 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                       foregroundColor: writingColors.onBackground,
                     ),
                   ],
+
+                  // Keyboard inset: expands to exactly the keyboard height so
+                  // the toolbar stack is always above the keyboard.
+                  // With resizeToAvoidBottomInset: false the body MediaQuery
+                  // preserves the raw viewInsets, so this SizedBox tracks the
+                  // keyboard animation frame by frame with no gray gap.
+                  SizedBox(
+                    height: MediaQuery.viewInsetsOf(context).bottom,
+                  ),
                 ],
               ),
             ),

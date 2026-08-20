@@ -40,34 +40,47 @@ class EditorNotifier extends _$EditorNotifier {
   late StatisticsRepository _statsRepo;
   Timer? _autosaveTimer;
   int _lastSavedWordCount = 0;
+  // Accumulated on every _saveNow() BEFORE any await, so concurrent calls
+  // (autosave timer + saveNow() on back) each add their own delta atomically
+  // on the single Dart thread. onDispose reads this field, not state.value,
+  // to avoid the race where the second saveNow() overwrites state with 0.
+  int _sessionWordsDelta = 0;
   DateTime _sessionStart = DateTime.now();
 
   @override
   Future<EditorState> build(String documentId) async {
     _repo = ref.watch(editorRepositoryProvider);
-    _statsRepo = ref.watch(statisticsRepositoryProvider);
+    // ref.read (not watch): settingsProvider changes must not rebuild the
+    // editor mid-session, which would reset _sessionWordsDelta and
+    // _lastSavedWordCount, losing the session's accumulated delta.
+    _statsRepo = ref.read(statisticsRepositoryProvider);
     _sessionStart = DateTime.now();
+    _sessionWordsDelta = 0;
 
     ref.onDispose(() {
       _autosaveTimer?.cancel();
-      // Capture state synchronously before Riverpod tears it down.
-      // An unawaited _saveAndRecord() would read state.value AFTER the
-      // first await, at which point the notifier is already disposed and
-      // state.value is null — making documentId empty and wordsDelta 0.
       final current = state.value;
       if (current != null) {
-        final docId = current.document.id;
-        final wordsDelta = current.sessionWordsDelta;
+        // Read _sessionWordsDelta (field), not state.value.sessionWordsDelta.
+        // The race: autosave fires → _saveNow() A captures current(delta=0),
+        // user presses back → _saveNow() B captures current(delta=0) too,
+        // B completes first and writes state(delta=0), A writes state(delta=N)
+        // but onDispose may already be reading between the two. The field
+        // is incremented synchronously before any await in _saveNow(), so
+        // both calls accumulate into it without collision on the single thread.
+        final wordsDelta = _sessionWordsDelta;
         final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
         unawaited(
           _statsRepo
               .recordSession(
-                documentId: docId,
+                documentId: current.document.id,
                 wordsDelta: wordsDelta,
                 durationSeconds: elapsed,
                 startedAt: _sessionStart,
               )
-              .catchError((_) {}),
+              .catchError((Object e, StackTrace st) {
+                debugPrint('[EditorNotifier] recordSession failed: $e\n$st');
+              }),
         );
       }
     });
@@ -147,6 +160,9 @@ class EditorNotifier extends _$EditorNotifier {
         jsonEncode({'ops': current.controller.document.toDelta().toJson()});
     final delta = wc - _lastSavedWordCount;
     _lastSavedWordCount = wc;
+    // Accumulate to field before the first await so concurrent _saveNow()
+    // calls each add their own slice. If the save fails, roll back.
+    _sessionWordsDelta += delta;
 
     try {
       await _repo.save(
@@ -159,6 +175,7 @@ class EditorNotifier extends _$EditorNotifier {
         targetWordCount: current.document.targetWordCount,
       );
     } on Object catch (e, st) {
+      _sessionWordsDelta -= delta;
       debugPrint('[EditorNotifier] Save failed: $e\n$st');
       state = AsyncData(current.copyWith(isSaving: false));
       rethrow;
@@ -173,7 +190,7 @@ class EditorNotifier extends _$EditorNotifier {
           charCount: cc,
           updatedAt: DateTime.now(),
         ),
-        sessionWordsDelta: current.sessionWordsDelta + delta,
+        sessionWordsDelta: _sessionWordsDelta,
       ),
     );
   }

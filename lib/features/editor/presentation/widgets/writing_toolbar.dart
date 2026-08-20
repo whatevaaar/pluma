@@ -3,8 +3,10 @@ import 'package:flutter_quill/flutter_quill.dart';
 
 /// Formatting toolbar for the editor.
 ///
-/// Deliberately minimal — only the formatting options writers actually use.
-/// Hidden in focus mode; revealed on tap.
+/// Built from individual flutter_quill button widgets in a plain Container
+/// so the background color is 100% controlled — no QuillSimpleToolbar
+/// internals (MenuAnchor, DropdownButton, Theme fallbacks) that could
+/// render gray regardless of the color config passed to them.
 class WritingToolbar extends StatelessWidget {
   const WritingToolbar({
     required this.controller,
@@ -23,70 +25,82 @@ class WritingToolbar extends StatelessWidget {
     final bgColor = backgroundColor ?? colorScheme.surface;
     final fgColor = foregroundColor ?? colorScheme.onSurfaceVariant;
 
+    final baseOptions = QuillToolbarBaseButtonOptions<dynamic, dynamic>(
+      iconSize: 20,
+      iconTheme: QuillIconTheme(
+        iconButtonSelectedData: IconButtonData(
+          style: IconButton.styleFrom(
+            backgroundColor: fgColor.withAlpha(30),
+            foregroundColor: fgColor,
+          ),
+        ),
+        iconButtonUnselectedData: IconButtonData(
+          style: IconButton.styleFrom(
+            foregroundColor: fgColor.withAlpha(153),
+          ),
+        ),
+      ),
+    );
+
     return Container(
       height: 44,
-      // Clip.hardEdge prevents the toolbar's internal Container (42px) from
-      // ever overflowing into WordCountBar below.
-      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(
           top: BorderSide(color: fgColor.withAlpha(40), width: 0.5),
         ),
       ),
-      // Theme override: QuillSimpleToolbar uses canvasColor / colorScheme
-      // values from the ambient theme as fallbacks for its own Container
-      // decoration and for any internally-created Material surfaces. Without
-      // this override, the system theme's gray can bleed through as the
-      // visible toolbar background regardless of config.color.
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          canvasColor: bgColor,
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            surface: bgColor,
-            surfaceContainer: bgColor,
-          ),
-        ),
-        child: QuillSimpleToolbar(
-          controller: controller,
-          config: QuillSimpleToolbarConfig(
-            // multiRowsDisplay: false switches from a Wrap (which defaults to
-            // true and overflows the 44px Container across two rows, painting
-            // over WordCountBar) to a horizontally-scrollable single row.
-            // config.color is only read in the single-row Container branch,
-            // so both properties must be set together.
-            multiRowsDisplay: false,
-            color: bgColor,
-            showFontSize: false,
-            showBackgroundColorButton: false,
-            showColorButton: false,
-            showClearFormat: false,
-            showIndent: false,
-            showLink: false,
-            showSearchButton: false,
-            showSubscript: false,
-            showSuperscript: false,
-            showInlineCode: false,
-            showCodeBlock: false,
-            buttonOptions: QuillSimpleToolbarButtonOptions(
-              base: QuillToolbarBaseButtonOptions(
-                iconSize: 20,
-                iconTheme: QuillIconTheme(
-                  iconButtonSelectedData: IconButtonData(
-                    style: IconButton.styleFrom(
-                      backgroundColor: fgColor.withAlpha(30),
-                      foregroundColor: fgColor,
-                    ),
-                  ),
-                  iconButtonUnselectedData: IconButtonData(
-                    style: IconButton.styleFrom(
-                      foregroundColor: fgColor.withAlpha(153),
-                    ),
-                  ),
-                ),
-              ),
+      clipBehavior: Clip.hardEdge,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          children: [
+            QuillToolbarHistoryButton(
+              isUndo: true,
+              controller: controller,
+              baseOptions: baseOptions,
             ),
-          ),
+            QuillToolbarHistoryButton(
+              isUndo: false,
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+            QuillToolbarToggleStyleButton(
+              attribute: Attribute.bold,
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+            QuillToolbarToggleStyleButton(
+              attribute: Attribute.italic,
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+            QuillToolbarToggleStyleButton(
+              attribute: Attribute.underline,
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+            QuillToolbarToggleStyleButton(
+              attribute: Attribute.strikeThrough,
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+            QuillToolbarToggleStyleButton(
+              attribute: Attribute.ul,
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+            QuillToolbarToggleStyleButton(
+              attribute: Attribute.ol,
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+            QuillToolbarToggleCheckListButton(
+              controller: controller,
+              baseOptions: baseOptions,
+            ),
+          ],
         ),
       ),
     );

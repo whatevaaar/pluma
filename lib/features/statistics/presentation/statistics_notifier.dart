@@ -17,10 +17,27 @@ class StatisticsNotifier extends _$StatisticsNotifier {
     _repo = ref.watch(statisticsRepositoryProvider);
     ref.onDispose(() => _sub?.cancel());
 
-    final initial = await _repo.watchStats().first;
-    _sub = _repo.watchStats().skip(1).listen((stats) {
-      state = AsyncData(stats);
-    });
-    return initial;
+    // Single subscription: captures the initial value AND all future updates.
+    // The previous two-stream pattern (.first + .skip(1)) had a race condition
+    // where DB changes between the two subscriptions were silently lost.
+    // Using one Completer-based subscription eliminates this gap.
+    final completer = Completer<WritingStats>();
+    _sub = _repo.watchStats().listen(
+      (stats) {
+        if (!completer.isCompleted) {
+          completer.complete(stats);
+        } else {
+          state = AsyncData(stats);
+        }
+      },
+      onError: (Object e, StackTrace st) {
+        if (!completer.isCompleted) {
+          completer.completeError(e, st);
+        } else {
+          state = AsyncError(e, st);
+        }
+      },
+    );
+    return completer.future;
   }
 }

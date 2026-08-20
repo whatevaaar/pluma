@@ -43,19 +43,32 @@ class StatisticsDao extends DatabaseAccessor<AppDatabase>
   }
 
   // Upsert: adds [wordsDelta] and [minutes] to today's snapshot.
+  //
+  // Uses customUpdate (not customStatement) so Drift's reactive infrastructure
+  // is notified of the table change and watchAll() re-emits.
   Future<void> upsertToday({
     required String dateKey,
     required int wordsDelta,
     required int minutes,
   }) async {
-    await customStatement('''
+    await customUpdate(
+      '''
       INSERT INTO daily_stats (date, words_written, minutes_written, sessions_count)
       VALUES (?, ?, ?, 1)
       ON CONFLICT(date) DO UPDATE SET
         words_written = words_written + ?,
         minutes_written = minutes_written + ?,
         sessions_count = sessions_count + 1
-    ''', [dateKey, wordsDelta, minutes, wordsDelta, minutes],
+      ''',
+      variables: [
+        Variable.withString(dateKey),
+        Variable.withInt(wordsDelta),
+        Variable.withInt(minutes),
+        Variable.withInt(wordsDelta),
+        Variable.withInt(minutes),
+      ],
+      updates: {dailyStats},
+      updateKind: UpdateKind.insert,
     );
   }
 

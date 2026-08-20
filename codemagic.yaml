@@ -90,7 +90,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --export-options-plist=/Users/builder/export_options.plist \
-            --build-name=0.1.0 \
+            --build-name=0.1.$BUILD_NUMBER \
             --build-number=$BUILD_NUMBER
 
     artifacts:
@@ -100,11 +100,11 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        # submit_to_testflight: false — el build se sube a App Store Connect y
-        # queda disponible para internal testers sin necesitar beta review.
-        # El submit externo se hace manualmente desde App Store Connect cuando
-        # el build anterior ya haya sido aprobado.
-        submit_to_testflight: false
+        # Cada build usa 0.1.$BUILD_NUMBER como marketing version, lo que crea
+        # un "train" distinto en App Store Connect por cada push. Trains
+        # distintos no colisionan en beta review, eliminando el error 422
+        # "Another build in the same train is already in beta review".
+        submit_to_testflight: true
 
   # ─────────────────────────────────────────────────────────────────────────
   # Android → APK debug

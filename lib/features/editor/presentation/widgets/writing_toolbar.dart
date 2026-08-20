@@ -25,6 +25,9 @@ class WritingToolbar extends StatelessWidget {
 
     return Container(
       height: 44,
+      // Clip.hardEdge prevents the toolbar's internal Container (42px) from
+      // ever overflowing into WordCountBar below.
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(
@@ -34,8 +37,12 @@ class WritingToolbar extends StatelessWidget {
       child: QuillSimpleToolbar(
         controller: controller,
         config: QuillSimpleToolbarConfig(
-          // color overrides QuillSimpleToolbar's own Container background,
-          // which otherwise reads Theme.canvasColor regardless of parent color.
+          // multiRowsDisplay: false switches from a Wrap (which defaults to
+          // true and overflows the 44px Container across two rows, painting
+          // over WordCountBar) to a horizontally-scrollable single row.
+          // config.color is only read in the single-row Container branch,
+          // so both properties must be set together.
+          multiRowsDisplay: false,
           color: bgColor,
           showFontSize: false,
           showBackgroundColorButton: false,

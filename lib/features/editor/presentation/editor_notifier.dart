@@ -59,30 +59,26 @@ class EditorNotifier extends _$EditorNotifier {
 
     ref.onDispose(() {
       _autosaveTimer?.cancel();
-      final current = state.value;
-      if (current != null) {
-        // Read _sessionWordsDelta (field), not state.value.sessionWordsDelta.
-        // The race: autosave fires → _saveNow() A captures current(delta=0),
-        // user presses back → _saveNow() B captures current(delta=0) too,
-        // B completes first and writes state(delta=0), A writes state(delta=N)
-        // but onDispose may already be reading between the two. The field
-        // is incremented synchronously before any await in _saveNow(), so
-        // both calls accumulate into it without collision on the single thread.
-        final wordsDelta = _sessionWordsDelta;
-        final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
-        unawaited(
-          _statsRepo
-              .recordSession(
-                documentId: current.document.id,
-                wordsDelta: wordsDelta,
-                durationSeconds: elapsed,
-                startedAt: _sessionStart,
-              )
-              .catchError((Object e, StackTrace st) {
-                debugPrint('[EditorNotifier] recordSession failed: $e\n$st');
-              }),
-        );
-      }
+      // Do NOT gate on state.value: in Riverpod 3.x, state may be AsyncLoading
+      // during disposal (e.g. when a dependency is rebuilt just before the
+      // widget pops). state.value would be null and recordSession() would be
+      // silently skipped, causing statistics to always show zero.
+      // documentId is available via the generated _$EditorNotifier getter and
+      // does not require a non-null AsyncData state.
+      final wordsDelta = _sessionWordsDelta;
+      final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
+      unawaited(
+        _statsRepo
+            .recordSession(
+              documentId: documentId,
+              wordsDelta: wordsDelta,
+              durationSeconds: elapsed,
+              startedAt: _sessionStart,
+            )
+            .catchError((Object e, StackTrace st) {
+              debugPrint('[EditorNotifier] recordSession failed: $e\n$st');
+            }),
+      );
     });
 
     final doc = await _repo.load(documentId);

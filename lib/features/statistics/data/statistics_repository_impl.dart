@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:pluma/core/constants/app_constants.dart';
 import 'package:pluma/core/database/app_database.dart';
 import 'package:pluma/core/extensions/datetime_ext.dart';
@@ -69,13 +70,17 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
     final start = startedAt ??
         DateTime.now().subtract(Duration(seconds: durationSeconds));
 
-    await Future.wait([
-      _dao.upsertToday(
-        dateKey: dateKey,
-        wordsDelta: words,
-        minutes: minutes,
-      ),
-      _dao.insertSession(
+    // upsertToday must always succeed — it drives the statistics screen.
+    // insertSession is best-effort: a failure there must not prevent the
+    // daily snapshot from being written (and Drift's stream from being
+    // notified). Run sequentially so that upsertToday commits first.
+    await _dao.upsertToday(
+      dateKey: dateKey,
+      wordsDelta: words,
+      minutes: minutes,
+    );
+    try {
+      await _dao.insertSession(
         WritingSessionsCompanion.insert(
           id: const Uuid().v4(),
           documentId: documentId,
@@ -84,8 +89,11 @@ class StatisticsRepositoryImpl implements StatisticsRepository {
           startedAt: start,
           endedAt: Value(DateTime.now()),
         ),
-      ),
-    ]);
+      );
+    } on Object catch (e, st) {
+      // Log but don't rethrow: the daily snapshot was already committed.
+      debugPrint('[StatisticsRepo] insertSession failed (non-fatal): $e\n$st');
+    }
   }
 
   @override

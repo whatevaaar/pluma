@@ -28,39 +28,42 @@ class WritingToolbar extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(
-          top: BorderSide(
-            color: fgColor.withAlpha(40),
-            width: 0.5,
-          ),
+          top: BorderSide(color: fgColor.withAlpha(40), width: 0.5),
         ),
       ),
-      child: QuillSimpleToolbar(
-        controller: controller,
-        config: QuillSimpleToolbarConfig(
-          showFontSize: false,
-          showBackgroundColorButton: false,
-          showColorButton: false,
-          showClearFormat: false,
-          showIndent: false,
-          showLink: false,
-          showSearchButton: false,
-          showSubscript: false,
-          showSuperscript: false,
-          showInlineCode: false,
-          showCodeBlock: false,
-          buttonOptions: QuillSimpleToolbarButtonOptions(
-            base: QuillToolbarBaseButtonOptions(
-              iconSize: 20,
-              iconTheme: QuillIconTheme(
-                iconButtonSelectedData: IconButtonData(
-                  style: IconButton.styleFrom(
-                    backgroundColor: fgColor.withAlpha(30),
-                    foregroundColor: fgColor,
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          canvasColor: bgColor,
+          colorScheme: colorScheme.copyWith(surface: bgColor),
+        ),
+        child: QuillSimpleToolbar(
+          controller: controller,
+          config: QuillSimpleToolbarConfig(
+            showFontSize: false,
+            showBackgroundColorButton: false,
+            showColorButton: false,
+            showClearFormat: false,
+            showIndent: false,
+            showLink: false,
+            showSearchButton: false,
+            showSubscript: false,
+            showSuperscript: false,
+            showInlineCode: false,
+            showCodeBlock: false,
+            buttonOptions: QuillSimpleToolbarButtonOptions(
+              base: QuillToolbarBaseButtonOptions(
+                iconSize: 20,
+                iconTheme: QuillIconTheme(
+                  iconButtonSelectedData: IconButtonData(
+                    style: IconButton.styleFrom(
+                      backgroundColor: fgColor.withAlpha(30),
+                      foregroundColor: fgColor,
+                    ),
                   ),
-                ),
-                iconButtonUnselectedData: IconButtonData(
-                  style: IconButton.styleFrom(
-                    foregroundColor: fgColor.withAlpha(153),
+                  iconButtonUnselectedData: IconButtonData(
+                    style: IconButton.styleFrom(
+                      foregroundColor: fgColor.withAlpha(153),
+                    ),
                   ),
                 ),
               ),

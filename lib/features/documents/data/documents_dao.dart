@@ -76,6 +76,14 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase>
     return into(documents).insertOnConflictUpdate(companion);
   }
 
+  // Used by the editor save path — documents always exist before editing,
+  // so a plain UPDATE avoids the INSERT validation that requires createdAt.
+  Future<void> updateContent(DocumentsCompanion companion) {
+    return (update(documents)
+          ..where((d) => d.id.equals(companion.id.value)))
+        .write(companion);
+  }
+
   Future<void> updateFavorite(String id, {required bool isFavorite}) {
     return (update(documents)..where((d) => d.id.equals(id))).write(
       DocumentsCompanion(isFavorite: Value(isFavorite)),

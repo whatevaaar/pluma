@@ -1,6 +1,8 @@
 import 'dart:async' show Timer, unawaited;
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -107,7 +109,10 @@ class EditorNotifier extends _$EditorNotifier {
 
   void _scheduleAutosave() {
     _autosaveTimer?.cancel();
-    _autosaveTimer = Timer(AppConstants.autosaveDebounceDuration, _saveNow);
+    _autosaveTimer = Timer(
+      AppConstants.autosaveDebounceDuration,
+      () => unawaited(_saveNow()),
+    );
   }
 
   Future<void> _saveNow() async {
@@ -124,15 +129,21 @@ class EditorNotifier extends _$EditorNotifier {
     final delta = wc - _lastSavedWordCount;
     _lastSavedWordCount = wc;
 
-    await _repo.save(
-      documentId: current.document.id,
-      title: current.document.title,
-      content: deltaJson,
-      plainText: plain,
-      wordCount: wc,
-      charCount: cc,
-      targetWordCount: current.document.targetWordCount,
-    );
+    try {
+      await _repo.save(
+        documentId: current.document.id,
+        title: current.document.title,
+        content: deltaJson,
+        plainText: plain,
+        wordCount: wc,
+        charCount: cc,
+        targetWordCount: current.document.targetWordCount,
+      );
+    } on Object catch (e, st) {
+      debugPrint('[EditorNotifier] Save failed: $e\n$st');
+      state = AsyncData(current.copyWith(isSaving: false));
+      rethrow;
+    }
 
     state = AsyncData(
       current.copyWith(

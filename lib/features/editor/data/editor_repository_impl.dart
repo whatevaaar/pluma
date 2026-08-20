@@ -29,7 +29,7 @@ class EditorRepositoryImpl implements EditorRepository {
     required int charCount,
     int? targetWordCount,
   }) {
-    return _dao.upsert(
+    return _dao.updateContent(
       DocumentsCompanion(
         id: Value(documentId),
         title: Value(title),

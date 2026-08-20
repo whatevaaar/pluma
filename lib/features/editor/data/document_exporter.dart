@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill/flutter_quill.dart' hide Document;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -44,7 +44,7 @@ class DocumentExporter {
     Document doc,
     QuillController controller,
   ) async {
-    final markdown = _deltaToMarkdown(doc.content);
+    final markdown = deltaToMarkdown(doc.content);
     final title = _safeTitle(doc);
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/$title.md');
@@ -53,8 +53,8 @@ class DocumentExporter {
   }
 
   /// Converts Quill Delta JSON (stored in [deltaJson] as {"ops":[...]}) to a
-  /// Markdown string.
-  static String _deltaToMarkdown(String deltaJson) {
+  /// Markdown string. Public to allow unit testing.
+  static String deltaToMarkdown(String deltaJson) {
     final List<dynamic> ops;
     try {
       final decoded = jsonDecode(deltaJson) as Map<String, dynamic>;

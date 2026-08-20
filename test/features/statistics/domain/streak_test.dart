@@ -1,121 +1,178 @@
-import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pluma/features/statistics/domain/streak_calculator.dart';
 
-// These tests validate streak calculation logic in isolation.
-// The actual StatisticsRepositoryImpl is tested with NativeDatabase.memory()
-// in test/features/statistics/data/statistics_repository_impl_test.dart.
-
-/// Simple pure-function streak calculator for unit testing without DB.
-int computeStreak(List<String> activeDates, String today) {
-  if (activeDates.isEmpty) return 0;
-
-  // Sort descending
-  final sorted = [...activeDates]..sort((a, b) => b.compareTo(a));
-
-  // If today has no activity, check if yesterday does
-  var streak = 0;
-  var cursor = today;
-
-  // If today is not active, start from yesterday
-  if (!sorted.contains(today)) {
-    final yesterday = _subtractDay(today);
-    if (!sorted.contains(yesterday)) return 0;
-    cursor = yesterday;
-  }
-
-  for (final date in sorted) {
-    if (date == cursor) {
-      streak++;
-      cursor = _subtractDay(cursor);
-    } else {
-      break;
-    }
-  }
-
-  return streak;
-}
-
-String _subtractDay(String dateKey) {
-  final parts = dateKey.split('-');
-  final dt = DateTime(
-    int.parse(parts[0]),
-    int.parse(parts[1]),
-    int.parse(parts[2]),
-  ).subtract(const Duration(days: 1));
-  final m = dt.month.toString().padLeft(2, '0');
-  final d = dt.day.toString().padLeft(2, '0');
-  return '${dt.year}-$m-$d';
-}
+// Tests for the actual domain functions in streak_calculator.dart.
+// Previous version tested a local reimplementation — this file tests the
+// real functions so regressions in the domain are caught directly.
 
 void main() {
-  group('Streak calculation', () {
-    test('no active days → streak is 0', () {
-      expect(computeStreak([], '2026-08-12'), 0);
+  group('computeCurrentStreak', () {
+    test('empty active dates → 0', () {
+      expect(computeCurrentStreak([], '2026-08-12'), 0);
     });
 
-    test('only today active → streak is 1', () {
-      expect(computeStreak(['2026-08-12'], '2026-08-12'), 1);
+    test('only today active → 1', () {
+      expect(computeCurrentStreak(['2026-08-12'], '2026-08-12'), 1);
     });
 
-    test('yesterday and today active → streak is 2', () {
+    test('today + yesterday → 2', () {
       expect(
-        computeStreak(['2026-08-11', '2026-08-12'], '2026-08-12'),
+        computeCurrentStreak(['2026-08-11', '2026-08-12'], '2026-08-12'),
         2,
       );
     });
 
-    test('3 consecutive days → streak is 3', () {
+    test('3 consecutive days → 3', () {
       expect(
-        computeStreak(['2026-08-10', '2026-08-11', '2026-08-12'], '2026-08-12'),
+        computeCurrentStreak(
+          ['2026-08-10', '2026-08-11', '2026-08-12'],
+          '2026-08-12',
+        ),
         3,
       );
     });
 
-    test('gap in days resets streak', () {
-      // Aug 8 and Aug 10 active, Aug 9 missing — streak from today (12) is 0
-      // because yesterday (11) is missing
+    test('grace period: yesterday active, not today → streak alive (1)', () {
+      // User has not written today yet — streak should not break until
+      // tomorrow. This is the "grace period" behaviour.
+      expect(computeCurrentStreak(['2026-08-11'], '2026-08-12'), 1);
+    });
+
+    test('grace period: 2-day streak ending yesterday → 2', () {
       expect(
-        computeStreak(['2026-08-08', '2026-08-10'], '2026-08-12'),
-        0,
+        computeCurrentStreak(
+          ['2026-08-10', '2026-08-11'],
+          '2026-08-12',
+        ),
+        2,
       );
     });
 
-    test('yesterday active but not today → streak is 1 (grace period)', () {
-      // User wrote yesterday but not yet today — streak still alive
+    test('neither today nor yesterday active → 0', () {
+      expect(computeCurrentStreak(['2026-08-10'], '2026-08-12'), 0);
+    });
+
+    test('gap two days ago breaks streak even if yesterday active', () {
+      // Active: Aug 9, Aug 11. Aug 10 is missing → streak from yesterday is 1,
+      // but the day before yesterday broke it.
       expect(
-        computeStreak(['2026-08-11'], '2026-08-12'),
+        computeCurrentStreak(['2026-08-09', '2026-08-11'], '2026-08-12'),
         1,
       );
     });
 
-    test('streak does not count non-consecutive days', () {
+    test('non-consecutive days before streak do not count', () {
+      // Alternating days: only yesterday contributes.
       expect(
-        computeStreak(
+        computeCurrentStreak(
           ['2026-08-05', '2026-08-07', '2026-08-09', '2026-08-11'],
           '2026-08-12',
         ),
-        1, // only yesterday counts
+        1,
+      );
+    });
+
+    test('unsorted input is handled correctly', () {
+      // Dates passed in random order should still work.
+      expect(
+        computeCurrentStreak(
+          ['2026-08-12', '2026-08-10', '2026-08-11'],
+          '2026-08-12',
+        ),
+        3,
+      );
+    });
+
+    test('month boundary: Feb 28 → Mar 1 is consecutive', () {
+      expect(
+        computeCurrentStreak(['2026-02-28', '2026-03-01'], '2026-03-01'),
+        2,
+      );
+    });
+
+    test('year boundary: Dec 31 → Jan 1 is consecutive', () {
+      expect(
+        computeCurrentStreak(['2025-12-31', '2026-01-01'], '2026-01-01'),
+        2,
       );
     });
   });
 
-  group('fake_async — simulating day transitions', () {
-    test('streak-based notification fires after 25 hours without writing', () {
-      fakeAsync((async) {
-        var streakBroken = false;
-        final timer = async.getClock(DateTime(2026, 8, 12, 9));
+  group('computeLongestStreak', () {
+    test('empty list → 0', () {
+      expect(computeLongestStreak([]), 0);
+    });
 
-        // Simulate: last activity at 09:00, check 25 hours later
-        async.elapse(const Duration(hours: 25));
+    test('single day → 1', () {
+      expect(computeLongestStreak(['2026-08-12']), 1);
+    });
 
-        final now = timer.now();
-        // After 25h, it's past midnight of the next day
-        if (now.day != 12) {
-          streakBroken = true;
-        }
+    test('two consecutive days → 2', () {
+      expect(computeLongestStreak(['2026-08-11', '2026-08-12']), 2);
+    });
 
-        expect(streakBroken, isTrue);
-      });
+    test('two non-consecutive days → 1', () {
+      expect(computeLongestStreak(['2026-08-10', '2026-08-12']), 1);
+    });
+
+    test('picks the longer of two disjoint streaks', () {
+      // Streak of 2 (Aug 10–11) and streak of 3 (Aug 14–16) → 3.
+      expect(
+        computeLongestStreak([
+          '2026-08-10',
+          '2026-08-11',
+          '2026-08-14',
+          '2026-08-15',
+          '2026-08-16',
+        ]),
+        3,
+      );
+    });
+
+    test('longest streak in the middle is found', () {
+      // Streak: 1(Jan), 3(Mar–May), 2(Jul–Aug) → longest 3.
+      expect(
+        computeLongestStreak([
+          '2026-01-10',
+          '2026-03-01',
+          '2026-03-02',
+          '2026-03-03',
+          '2026-07-20',
+          '2026-07-21',
+        ]),
+        3,
+      );
+    });
+
+    test('all days consecutive → streak equals list length', () {
+      expect(
+        computeLongestStreak([
+          '2026-08-10',
+          '2026-08-11',
+          '2026-08-12',
+          '2026-08-13',
+          '2026-08-14',
+        ]),
+        5,
+      );
+    });
+
+    test('unsorted input is handled correctly', () {
+      expect(
+        computeLongestStreak([
+          '2026-08-12',
+          '2026-08-10',
+          '2026-08-11',
+        ]),
+        3,
+      );
+    });
+
+    test('month boundary counts as consecutive', () {
+      expect(
+        computeLongestStreak(['2026-01-31', '2026-02-01', '2026-02-02']),
+        3,
+      );
     });
   });
 }

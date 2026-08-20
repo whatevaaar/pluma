@@ -309,6 +309,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
       scrollController: _scrollController,
       focusNode: _editorFocusNode,
       config: QuillEditorConfig(
+        expands: true,
         padding: EdgeInsets.symmetric(
           horizontal: 20,
           vertical: state.focusModeEnabled ? 60 : 16,

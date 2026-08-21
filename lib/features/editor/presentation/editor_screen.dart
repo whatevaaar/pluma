@@ -9,6 +9,7 @@ import 'package:pluma/core/theme/app_text_styles.dart';
 import 'package:pluma/core/theme/writing_theme_colors.dart';
 import 'package:pluma/features/editor/data/document_exporter.dart';
 import 'package:pluma/features/editor/presentation/editor_notifier.dart';
+import 'package:pluma/features/editor/presentation/poem_card_screen.dart';
 import 'package:pluma/features/editor/presentation/widgets/word_count_bar.dart';
 import 'package:pluma/features/editor/presentation/widgets/writing_settings_sheet.dart';
 import 'package:pluma/features/editor/presentation/widgets/writing_toolbar.dart';
@@ -496,6 +497,19 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     );
   }
 
+  void _openPoemCard(BuildContext context, EditorState state) {
+    final fontFamily =
+        ref.read(settingsProvider).value?.editorFont.fontFamily;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PoemCardScreen(
+          document: state.document,
+          fontFamily: fontFamily,
+        ),
+      ),
+    );
+  }
+
   void _showDocumentOptions(BuildContext context, EditorState state) {
     unawaited(
       showModalBottomSheet<void>(
@@ -518,6 +532,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                 onTap: () {
                   Navigator.pop(ctx);
                   _showWordTargetDialog(context, state);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.image_outlined),
+                title: const Text('Compartir como imagen'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _openPoemCard(context, state);
                 },
               ),
               ListTile(

@@ -1,5 +1,7 @@
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pluma/core/constants/app_constants.dart';
+import 'package:pluma/features/editor/presentation/editor_notifier.dart';
 
 void main() {
   group('EditorNotifier — autosave debounce', () {
@@ -35,6 +37,32 @@ void main() {
       const before = 100;
       const after = 80;
       expect(after - before, -20);
+    });
+  });
+
+  group('poetry mode — center alignment', () {
+    test('isDocumentCentered tracks the center/clear format operations', () {
+      final controller = QuillController.basic();
+      addTearDown(controller.dispose);
+      controller.document.insert(0, 'verso uno\nverso dos');
+
+      expect(isDocumentCentered(controller), isFalse);
+
+      // Enabling poetry mode centers the whole document.
+      controller.formatText(
+        0,
+        controller.document.length,
+        Attribute.centerAlignment,
+      );
+      expect(isDocumentCentered(controller), isTrue);
+
+      // Disabling clears the alignment back to the default.
+      controller.formatText(
+        0,
+        controller.document.length,
+        Attribute.clone(Attribute.leftAlignment, null),
+      );
+      expect(isDocumentCentered(controller), isFalse);
     });
   });
 }

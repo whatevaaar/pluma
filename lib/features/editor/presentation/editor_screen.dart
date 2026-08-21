@@ -527,6 +527,23 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.format_align_center),
+                title: const Text('Modo poesía'),
+                subtitle: const Text('Centra el texto del poema'),
+                trailing: isDocumentCentered(state.controller)
+                    ? Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.primary,
+                      )
+                    : null,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ref
+                      .read(editorProvider(widget.documentId).notifier)
+                      .togglePoetryMode();
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.flag_outlined),
                 title: const Text('Establecer objetivo de palabras'),
                 onTap: () {

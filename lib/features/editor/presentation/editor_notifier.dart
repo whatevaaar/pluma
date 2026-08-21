@@ -19,6 +19,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'editor_notifier.freezed.dart';
 part 'editor_notifier.g.dart';
 
+/// True if the document has any center-aligned line — the persisted signal for
+/// "poetry mode". Read from the Delta so it survives reloads.
+bool isDocumentCentered(quill.QuillController controller) {
+  for (final op in controller.document.toDelta().toList()) {
+    if (op.attributes?['align'] == 'center') return true;
+  }
+  return false;
+}
+
 @freezed
 abstract class EditorState with _$EditorState {
   const factory EditorState({
@@ -205,6 +214,23 @@ class EditorNotifier extends _$EditorNotifier {
     final current = state.requireValue;
     state = AsyncData(
       current.copyWith(focusModeEnabled: !current.focusModeEnabled),
+    );
+  }
+
+  /// Toggles poetry mode: center-aligns the whole document (or clears the
+  /// alignment when turning off). The mode isn't stored in [EditorState] — it
+  /// lives in the document's own alignment and is read back via
+  /// [isDocumentCentered]. The formatting edit fires the content listener,
+  /// which rebuilds the UI and persists via autosave.
+  void togglePoetryMode() {
+    final controller = state.requireValue.controller;
+    final next = !isDocumentCentered(controller);
+    controller.formatText(
+      0,
+      controller.document.length,
+      next
+          ? quill.Attribute.centerAlignment
+          : quill.Attribute.clone(quill.Attribute.leftAlignment, null),
     );
   }
 

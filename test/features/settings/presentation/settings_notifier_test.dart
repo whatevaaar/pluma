@@ -49,7 +49,7 @@ void main() {
       const initial = AppSettings(
         themeMode: ThemeMode.dark,
         typewriterMode: true,
-        editorFontSize: 20.0,
+        editorFontSize: 20,
       );
       final fake = FakeSettingsRepository(initial: initial);
       final container = _makeContainer(fake);
@@ -112,7 +112,7 @@ void main() {
       await _readSettings(container);
       await container
           .read(settingsProvider.notifier)
-          .setEditorFontSize(22.0);
+          .setEditorFontSize(22);
 
       final saved = await fake.getSettings();
       expect(saved.editorFontSize, 22.0);
@@ -155,7 +155,7 @@ void main() {
       await _readSettings(container);
       await container
           .read(settingsProvider.notifier)
-          .setEditorLineHeight(2.0);
+          .setEditorLineHeight(2);
 
       final saved = await fake.getSettings();
       expect(saved.editorLineHeight, 2.0);

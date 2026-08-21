@@ -13,7 +13,7 @@ import 'package:share_plus/share_plus.dart';
 class DocumentExporter {
   DocumentExporter._();
 
-  /// Returns a filesystem-safe version of [displayTitle], falling back to
+  /// Returns a filesystem-safe version of `displayTitle`, falling back to
   /// 'documento' if the result is blank.
   static String _safeTitle(Document doc) {
     final safe = doc.displayTitle
@@ -32,7 +32,7 @@ class DocumentExporter {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/$title.txt');
     await file.writeAsString(doc.plainText);
-    await Share.shareXFiles([XFile(file.path)]);
+    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
   }
 
   // ---------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class DocumentExporter {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/$title.md');
     await file.writeAsString(markdown);
-    await Share.shareXFiles([XFile(file.path)]);
+    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
   }
 
   /// Converts Quill Delta JSON (stored in [deltaJson] as {"ops":[...]}) to a
@@ -59,7 +59,7 @@ class DocumentExporter {
     try {
       final decoded = jsonDecode(deltaJson) as Map<String, dynamic>;
       ops = decoded['ops'] as List<dynamic>;
-    } catch (_) {
+    } on Object catch (_) {
       return '';
     }
 
@@ -67,7 +67,7 @@ class DocumentExporter {
     // Buffer accumulates inline text for the current line until a newline op
     // is encountered.
     final lineBuffer = StringBuffer();
-    int orderedCounter = 0;
+    var orderedCounter = 0;
 
     for (final rawOp in ops) {
       if (rawOp is! Map<String, dynamic>) continue;
@@ -87,7 +87,7 @@ class DocumentExporter {
             final isBold = attrs?['bold'] == true;
             final isItalic = attrs?['italic'] == true;
 
-            String text = part;
+            var text = part;
             if (isBold && isItalic) {
               text = '***$text***';
             } else if (isBold) {
@@ -146,31 +146,30 @@ class DocumentExporter {
 
   /// Generates a PDF from the document and shares it via the printing package.
   static Future<void> exportAsPdf(Document doc) async {
-    final pdfDoc = pw.Document();
-
-    pdfDoc.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        build: (pw.Context context) => [
-          pw.Text(
-            doc.displayTitle,
-            style: pw.TextStyle(
-              fontSize: 20,
-              fontWeight: pw.FontWeight.bold,
+    final pdfDoc = pw.Document()
+      ..addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(40),
+          build: (context) => [
+            pw.Text(
+              doc.displayTitle,
+              style: const pw.TextStyle(
+                fontSize: 20,
+                fontWeight: pw.FontWeight.bold,
+              ),
             ),
-          ),
-          pw.SizedBox(height: 16),
-          pw.Text(
-            doc.plainText,
-            style: const pw.TextStyle(
-              fontSize: 12,
+            pw.SizedBox(height: 16),
+            pw.Text(
+              doc.plainText,
+              style: const pw.TextStyle(
+                fontSize: 12,
+              ),
+              textAlign: pw.TextAlign.left,
             ),
-            textAlign: pw.TextAlign.left,
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
 
     final title = _safeTitle(doc);
     await Printing.sharePdf(

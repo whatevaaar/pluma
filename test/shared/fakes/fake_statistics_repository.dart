@@ -3,14 +3,14 @@ import 'package:pluma/features/statistics/domain/statistics_repository.dart';
 import 'package:pluma/features/statistics/domain/streak_calculator.dart' as streak;
 
 class FakeStatisticsRepository implements StatisticsRepository {
+  FakeStatisticsRepository({this.dailyTarget = 500});
+
   int dailyTarget;
   int _wordsToday = 0;
   int _sessionsToday = 0;
   int _totalWords = 0;
   int _totalDaysActive = 0;
   final _activeDates = <String>[];
-
-  FakeStatisticsRepository({this.dailyTarget = 500});
 
   void seedDay(String dateKey, int words) {
     _totalWords += words;
@@ -62,7 +62,8 @@ class FakeStatisticsRepository implements StatisticsRepository {
         totalDaysActive: _totalDaysActive,
         bestDay: _wordsToday,
         bestSession: 0,
-        averageDaily: _totalDaysActive > 0 ? _totalWords ~/ _totalDaysActive : 0,
+        averageDaily:
+            _totalDaysActive > 0 ? _totalWords ~/ _totalDaysActive : 0,
         heatmapData: const {},
       );
 }

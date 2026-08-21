@@ -212,7 +212,7 @@ class EditorNotifier extends _$EditorNotifier {
     final current = state.requireValue;
     final next = !current.typewriterModeEnabled;
     state = AsyncData(current.copyWith(typewriterModeEnabled: next));
-    ref.read(settingsProvider.notifier).setTypewriterMode(next);
+    unawaited(ref.read(settingsProvider.notifier).setTypewriterMode(next));
   }
 
   Future<void> updateTargetWordCount(int? target) async {

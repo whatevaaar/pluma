@@ -14,7 +14,7 @@ ProviderContainer _makeContainer(FakeStatisticsRepository fake) {
 void main() {
   group('StatisticsNotifier', () {
     test('initializes with empty stats', () async {
-      final fake = FakeStatisticsRepository(dailyTarget: 500);
+      final fake = FakeStatisticsRepository();
       final container = _makeContainer(fake);
       addTearDown(container.dispose);
 
@@ -29,8 +29,9 @@ void main() {
     test('reflects seeded today words', () async {
       final fake = FakeStatisticsRepository(dailyTarget: 300);
       final todayKey = DateTime.now();
-      final key =
-          '${todayKey.year}-${todayKey.month.toString().padLeft(2, '0')}-${todayKey.day.toString().padLeft(2, '0')}';
+      final month = todayKey.month.toString().padLeft(2, '0');
+      final day = todayKey.day.toString().padLeft(2, '0');
+      final key = '${todayKey.year}-$month-$day';
       fake.seedToday(key, words: 250, sessions: 2);
 
       final container = _makeContainer(fake);
@@ -44,7 +45,7 @@ void main() {
     });
 
     test('dailyCompletionRatio is 0 when no words written', () async {
-      final fake = FakeStatisticsRepository(dailyTarget: 500);
+      final fake = FakeStatisticsRepository();
       final container = _makeContainer(fake);
       addTearDown(container.dispose);
 
@@ -58,8 +59,9 @@ void main() {
         () async {
       final fake = FakeStatisticsRepository(dailyTarget: 100);
       final todayKey = DateTime.now();
-      final key =
-          '${todayKey.year}-${todayKey.month.toString().padLeft(2, '0')}-${todayKey.day.toString().padLeft(2, '0')}';
+      final month = todayKey.month.toString().padLeft(2, '0');
+      final day = todayKey.day.toString().padLeft(2, '0');
+      final key = '${todayKey.year}-$month-$day';
       fake.seedToday(key, words: 100, sessions: 1);
 
       final container = _makeContainer(fake);

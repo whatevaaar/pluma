@@ -14,6 +14,7 @@ abstract interface class StatisticsRepository {
   });
 
   /// Returns heatmap data for the last [days] days.
-  /// Kept separate from watchStats() to avoid recomputing on every stream event.
+  /// Kept separate from watchStats() to avoid recomputing on every stream
+  /// event.
   Future<Map<String, int>> getHeatmapData({int days = 365});
 }

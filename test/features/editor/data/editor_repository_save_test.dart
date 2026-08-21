@@ -16,7 +16,7 @@ Future<void> _createDoc(
   String title = '',
   String content = r'{"ops":[{"insert":"\n"}]}',
 }) async {
-  final now = DateTime(2026, 1, 1);
+  final now = DateTime(2026);
   await dao.insert(
     DocumentsCompanion.insert(
       id: id,

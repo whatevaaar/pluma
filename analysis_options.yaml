@@ -30,3 +30,6 @@ linter:
     public_member_api_docs: false
     # El editor usa callbacks que a veces no son async
     avoid_void_async: false
+    # Los setters de un solo bool en los notifiers se pasan como tearoffs a
+    # SwitchListTile.onChanged; nombrarlos rompería esos call sites.
+    avoid_positional_boolean_parameters: false

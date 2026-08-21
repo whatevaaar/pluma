@@ -1,6 +1,7 @@
 import 'package:pluma/core/extensions/datetime_ext.dart';
 
-/// Returns the current streak: consecutive active days ending today or yesterday.
+/// Returns the current streak: consecutive active days ending today or
+/// yesterday.
 /// Implements "grace period" — if today has no activity but yesterday does,
 /// the streak is still alive.
 int computeCurrentStreak(List<String> activeDates, String today) {

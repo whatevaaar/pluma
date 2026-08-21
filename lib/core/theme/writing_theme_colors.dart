@@ -4,7 +4,7 @@ import 'package:pluma/features/settings/domain/app_settings.dart';
 
 /// Surface colors that define each writing theme.
 ///
-/// These are applied inside [EditorScreen] only — the rest of the app
+/// These are applied inside `EditorScreen` only — the rest of the app
 /// continues using the global Material [ThemeData].
 class WritingThemeColors {
   const WritingThemeColors({
@@ -13,11 +13,7 @@ class WritingThemeColors {
     required this.appBarBackground,
   });
 
-  final Color background;
-  final Color onBackground;
-  final Color appBarBackground;
-
-  static WritingThemeColors resolve(
+  factory WritingThemeColors.resolve(
     WritingTheme theme,
     Brightness brightness,
   ) {
@@ -56,4 +52,8 @@ class WritingThemeColors {
         ),
     };
   }
+
+  final Color background;
+  final Color onBackground;
+  final Color appBarBackground;
 }

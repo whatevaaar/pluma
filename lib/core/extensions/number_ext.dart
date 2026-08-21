@@ -12,7 +12,8 @@ extension IntWordFormat on int {
   String formatAsWords() {
     if (this >= 1000) {
       final k = this / 1000;
-      return '${k.toStringAsFixed(k.truncateToDouble() == k ? 0 : 1)}k palabras';
+      final n = k.toStringAsFixed(k.truncateToDouble() == k ? 0 : 1);
+      return '${n}k palabras';
     }
     return '$this palabras';
   }

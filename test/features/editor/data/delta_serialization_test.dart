@@ -29,35 +29,31 @@ void main() {
     test('old broken format (List.toString) is not valid JSON', () {
       // Documents why the bug existed: Dart's List.toString() on a list of
       // Maps produces [{insert: hola}] — string keys without quotes → not JSON.
-      final doc = Document();
-      doc.insert(0, 'hola');
+      final doc = Document()..insert(0, 'hola');
       final brokenFormat = doc.toDelta().toJson().toString();
       expect(() => jsonDecode(brokenFormat), throwsFormatException);
     });
 
     test('correct format (jsonEncode with ops wrapper) is valid JSON', () {
-      final doc = Document();
-      doc.insert(0, 'hola');
+      final doc = Document()..insert(0, 'hola');
       final correct = _save(doc);
       expect(() => jsonDecode(correct), returnsNormally);
     });
 
     test('saved JSON has top-level "ops" key containing a list', () {
-      final doc = Document();
-      doc.insert(0, 'test');
+      final doc = Document()..insert(0, 'test');
       final decoded = jsonDecode(_save(doc)) as Map<String, dynamic>;
       expect(decoded.containsKey('ops'), isTrue);
-      expect(decoded['ops'], isA<List>());
+      expect(decoded['ops'], isA<List<dynamic>>());
     });
 
     test('ops list contains map entries with an "insert" key', () {
-      final doc = Document();
-      doc.insert(0, 'contenido');
+      final doc = Document()..insert(0, 'contenido');
       final ops = (jsonDecode(_save(doc)) as Map<String, dynamic>)['ops']
           as List<dynamic>;
       expect(ops, isNotEmpty);
       expect(
-        ops.every((op) => op is Map && (op as Map).containsKey('insert')),
+        ops.every((op) => op is Map && op.containsKey('insert')),
         isTrue,
       );
     });

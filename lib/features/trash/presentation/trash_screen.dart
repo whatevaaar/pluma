@@ -91,7 +91,8 @@ class _EmptyTrashState extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Los documentos eliminados aparecen aquí\nhasta 30 días antes de borrarse.',
+            'Los documentos eliminados aparecen aquí\n'
+            'hasta 30 días antes de borrarse.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.outlineVariant,

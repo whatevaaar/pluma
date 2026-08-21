@@ -11,12 +11,12 @@ import 'package:pluma/features/statistics/presentation/statistics_notifier.dart'
 // ---------------------------------------------------------------------------
 
 const _kWeeks = 16;
-const _kDays = _kWeeks * 7; // 112 days
+const int _kDays = _kWeeks * 7; // 112 days
 const _kCellSize = 9.0;
 const _kGap = 2.0;
-const _kCellStep = _kCellSize + _kGap;
+const double _kCellStep = _kCellSize + _kGap;
 const _kMonthLabelHeight = 14.0;
-const _kSpanishMonths = [
+const List<String> _kSpanishMonths = [
   'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
   'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
 ];
@@ -49,19 +49,19 @@ class _StatsBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
-        _SectionLabel('Hoy'),
+        const _SectionLabel('Hoy'),
         const SizedBox(height: 12),
         _TodayCard(stats: stats),
         const SizedBox(height: 24),
-        _SectionLabel('Racha'),
+        const _SectionLabel('Racha'),
         const SizedBox(height: 12),
         _StreakCard(stats: stats),
         const SizedBox(height: 24),
-        _SectionLabel('Actividad'),
+        const _SectionLabel('Actividad'),
         const SizedBox(height: 12),
         _HeatmapCard(stats: stats),
         const SizedBox(height: 24),
-        _SectionLabel('Totales'),
+        const _SectionLabel('Totales'),
         const SizedBox(height: 12),
         _StatsGrid(stats: stats),
         const SizedBox(height: 32),
@@ -148,7 +148,7 @@ class _GoalRing extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final ringColor =
         reached ? colorScheme.primary : colorScheme.primaryContainer;
-    final size = 160.0;
+    const size = 160.0;
 
     return SizedBox(
       width: size,
@@ -157,7 +157,7 @@ class _GoalRing extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           CustomPaint(
-            size: Size(size, size),
+            size: const Size(size, size),
             painter: _RingPainter(
               ratio: ratio,
               foreground: colorScheme.primary,
@@ -264,9 +264,9 @@ class _StreakCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Row(
           children: [
-            Text(
+            const Text(
               '🔥',
-              style: const TextStyle(fontSize: 40),
+              style: TextStyle(fontSize: 40),
             ),
             const SizedBox(width: 16),
             Column(
@@ -432,7 +432,8 @@ class _HeatmapCard extends StatelessWidget {
     // The Monday that ends the last column:
     final lastMonday = today.subtract(Duration(days: daysSinceMonday));
     // Start date: Monday 16 weeks ago.
-    final firstMonday = lastMonday.subtract(const Duration(days: (_kWeeks - 1) * 7));
+    final firstMonday =
+        lastMonday.subtract(const Duration(days: (_kWeeks - 1) * 7));
 
     final dates = <DateTime>[];
     for (var i = 0; i < _kDays; i++) {
@@ -447,9 +448,9 @@ class _HeatmapCard extends StatelessWidget {
     final dates = _buildDates();
 
     // Total canvas size (excluding month labels row).
-    final gridWidth = _kWeeks * _kCellStep - _kGap;
-    final gridHeight = 7 * _kCellStep - _kGap;
-    final totalHeight = _kMonthLabelHeight + _kGap + gridHeight;
+    const gridWidth = _kWeeks * _kCellStep - _kGap;
+    const gridHeight = 7 * _kCellStep - _kGap;
+    const totalHeight = _kMonthLabelHeight + _kGap + gridHeight;
 
     return Card(
       child: Padding(
@@ -542,11 +543,12 @@ class _HeatmapPainter extends CustomPainter {
         if (row == 0 && date.month != lastMonthDrawn) {
           lastMonthDrawn = date.month;
           final label = _kSpanishMonths[date.month - 1];
-          final tp = TextPainter(
+          TextPainter(
             text: TextSpan(text: label, style: textStyle),
             textDirection: TextDirection.ltr,
-          )..layout();
-          tp.paint(canvas, Offset(x, 0));
+          )
+            ..layout()
+            ..paint(canvas, Offset(x, 0));
         }
 
         cellPaint.color = _cellColor(words);

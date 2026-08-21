@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide EditorState;
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pluma/core/theme/app_text_styles.dart';
 import 'package:pluma/core/theme/writing_theme_colors.dart';
+import 'package:pluma/features/editor/data/document_exporter.dart';
 import 'package:pluma/features/editor/presentation/editor_notifier.dart';
 import 'package:pluma/features/editor/presentation/widgets/word_count_bar.dart';
 import 'package:pluma/features/editor/presentation/widgets/writing_settings_sheet.dart';
 import 'package:pluma/features/editor/presentation/widgets/writing_toolbar.dart';
-import 'package:pluma/features/editor/data/document_exporter.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 
@@ -135,8 +135,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
         final prevFocus = prev?.value?.focusModeEnabled ?? false;
         final nextFocus = next.value?.focusModeEnabled ?? false;
         if (prevFocus == nextFocus) return;
-        SystemChrome.setEnabledSystemUIMode(
-          nextFocus ? SystemUiMode.immersive : SystemUiMode.edgeToEdge,
+        unawaited(
+          SystemChrome.setEnabledSystemUIMode(
+            nextFocus ? SystemUiMode.immersive : SystemUiMode.edgeToEdge,
+          ),
         );
       },
     );

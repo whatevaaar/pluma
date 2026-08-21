@@ -24,9 +24,9 @@ void main() {
     });
 
     test('initializes with all deleted documents', () async {
-      final fake = FakeTrashRepository();
-      fake.seedDeleted(title: 'Borrador');
-      fake.seedDeleted(title: 'Notas');
+      final fake = FakeTrashRepository()
+        ..seedDeleted(title: 'Borrador')
+        ..seedDeleted(title: 'Notas');
 
       final container = _makeContainer(fake);
       addTearDown(container.dispose);
@@ -65,10 +65,10 @@ void main() {
     });
 
     test('emptyTrash removes all deleted documents', () async {
-      final fake = FakeTrashRepository();
-      fake.seedDeleted(title: 'Doc 1');
-      fake.seedDeleted(title: 'Doc 2');
-      fake.seedDeleted(title: 'Doc 3');
+      final fake = FakeTrashRepository()
+        ..seedDeleted(title: 'Doc 1')
+        ..seedDeleted(title: 'Doc 2')
+        ..seedDeleted(title: 'Doc 3');
 
       final container = _makeContainer(fake);
       addTearDown(container.dispose);

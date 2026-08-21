@@ -1,17 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pluma/features/editor/data/document_exporter.dart';
 
-// Tests for DocumentExporter.deltaToMarkdown — the Delta-to-Markdown converter.
+// Tests for DocumentExporter.deltaToMarkdown — the Delta-to-Markdown
+// converter.
 //
-// Each test builds a minimal Delta JSON string (the format produced by _saveNow)
-// and verifies the output matches the expected Markdown.
+// Each test builds a minimal Delta JSON string (the format produced by
+// _saveNow) and verifies the output matches the expected Markdown.
 
 String _delta(List<Map<String, Object>> ops) {
   final opsJson = ops
       .map((op) {
-        final parts = ['"insert":${_encodeValue(op['insert']!)}'];
+        final parts = ['"insert":${_encodeValue(op['insert'])}'];
         if (op.containsKey('attributes')) {
-          parts.add('"attributes":${_encodeMap(op['attributes']! as Map)}');
+          final attrs = op['attributes']! as Map<String, Object?>;
+          parts.add('"attributes":${_encodeMap(attrs)}');
         }
         return '{${parts.join(',')}}';
       })
@@ -19,14 +21,21 @@ String _delta(List<Map<String, Object>> ops) {
   return '{"ops":[$opsJson]}';
 }
 
-String _encodeValue(Object value) {
+String _encodeValue(Object? value) {
+  if (value == null) {
+    return 'null';
+  }
   if (value is String) {
-    return '"${value.replaceAll(r'\', r'\\').replaceAll('"', r'\"').replaceAll('\n', r'\n')}"';
+    final escaped = value
+        .replaceAll(r'\', r'\\')
+        .replaceAll('"', r'\"')
+        .replaceAll('\n', r'\n');
+    return '"$escaped"';
   }
   return value.toString();
 }
 
-String _encodeMap(Map map) {
+String _encodeMap(Map<String, Object?> map) {
   final entries = map.entries
       .map((e) => '"${e.key}":${_encodeValue(e.value)}')
       .join(',');

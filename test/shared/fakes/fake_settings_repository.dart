@@ -4,11 +4,11 @@ import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/domain/settings_repository.dart';
 
 class FakeSettingsRepository implements SettingsRepository {
-  AppSettings _current;
-  final _controller = StreamController<AppSettings>.broadcast();
-
   FakeSettingsRepository({AppSettings initial = const AppSettings()})
       : _current = initial;
+
+  AppSettings _current;
+  final _controller = StreamController<AppSettings>.broadcast();
 
   @override
   Stream<AppSettings> watchSettings() async* {

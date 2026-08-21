@@ -77,7 +77,7 @@ class SettingsScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Meta diaria de palabras',
-                                style: tt.bodyMedium),
+                                style: tt.bodyMedium,),
                             const SizedBox(height: 2),
                             Text(
                               'Objetivo de escritura por día',

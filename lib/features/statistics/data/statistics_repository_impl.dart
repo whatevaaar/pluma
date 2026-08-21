@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pluma/core/constants/app_constants.dart';
 import 'package:pluma/core/database/app_database.dart';
@@ -7,7 +8,6 @@ import 'package:pluma/features/statistics/data/statistics_dao.dart';
 import 'package:pluma/features/statistics/domain/daily_stats.dart';
 import 'package:pluma/features/statistics/domain/statistics_repository.dart';
 import 'package:pluma/features/statistics/domain/streak_calculator.dart' as streak;
-import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 

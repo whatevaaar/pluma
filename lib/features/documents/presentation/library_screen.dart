@@ -11,6 +11,7 @@ import 'package:pluma/features/documents/presentation/library_notifier.dart';
 import 'package:pluma/features/documents/presentation/widgets/document_tile.dart';
 import 'package:pluma/features/documents/presentation/widgets/project_card.dart';
 import 'package:pluma/shared/widgets/empty_state.dart';
+import 'package:pluma/shared/widgets/section_header.dart';
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -47,7 +48,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
                 onChanged: notifier.search,
               )
-            : const Text('Mis escritos'),
+            : const Text('Escritos'),
         actions: [
           IconButton(
             icon: Icon(_showSearch ? Icons.close : Icons.search),
@@ -118,12 +119,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               // Projects section
               if (!isSearching && state.projects.isNotEmpty) ...[
                 const SliverToBoxAdapter(
-                  child: Padding(
+                  child: SectionHeader(
+                    label: 'Carpetas',
                     padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      'Carpetas',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -142,12 +140,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ),
                 const SliverToBoxAdapter(
-                  child: Padding(
+                  child: SectionHeader(
+                    label: 'Documentos',
                     padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      'Documentos',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
                   ),
                 ),
               ],

@@ -1,3 +1,8 @@
+const List<String> _spanishMonthsAbbr = [
+  'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+  'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+];
+
 extension DateTimeExt on DateTime {
   /// Returns true if this date falls on the same calendar day as [other].
   bool isSameDay(DateTime other) =>
@@ -22,4 +27,9 @@ extension DateTimeExt on DateTime {
 
   /// Strips the time component, returning midnight of the same day.
   DateTime get dateOnly => DateTime(year, month, day);
+
+  /// "21 ago 2026" — a Spanish medium date, matching the app's Spanish UI
+  /// (instead of a locale-dependent or bare numeric format).
+  String toSpanishMediumDate() =>
+      '$day ${_spanishMonthsAbbr[month - 1]} $year';
 }

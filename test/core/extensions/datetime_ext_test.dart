@@ -40,4 +40,15 @@ void main() {
       expect(dt.dateOnly, DateTime(2026, 8, 12));
     });
   });
+
+  group('DateTimeExt.toSpanishMediumDate', () {
+    test('formats with the Spanish month abbreviation', () {
+      expect(DateTime(2026, 8, 21).toSpanishMediumDate(), '21 ago 2026');
+    });
+
+    test('January and December map to the correct months', () {
+      expect(DateTime(2026).toSpanishMediumDate(), '1 ene 2026');
+      expect(DateTime(2026, 12, 31).toSpanishMediumDate(), '31 dic 2026');
+    });
+  });
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/app_version_provider.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
+import 'package:pluma/shared/widgets/section_header.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,7 +24,10 @@ class SettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
           // ── Apariencia ──────────────────────────────────────────────────
-          _SectionHeader(label: 'Apariencia', textTheme: tt),
+          const SectionHeader(
+            label: 'Apariencia',
+            padding: EdgeInsets.only(left: 4, bottom: 8, top: 4),
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -63,7 +67,10 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           // ── Escritura ────────────────────────────────────────────────────
-          _SectionHeader(label: 'Escritura', textTheme: tt),
+          const SectionHeader(
+            label: 'Escritura',
+            padding: EdgeInsets.only(left: 4, bottom: 8, top: 4),
+          ),
           Card(
             child: Column(
               children: [
@@ -139,7 +146,10 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           // ── Acerca de ────────────────────────────────────────────────────
-          _SectionHeader(label: 'Acerca de', textTheme: tt),
+          const SectionHeader(
+            label: 'Acerca de',
+            padding: EdgeInsets.only(left: 4, bottom: 8, top: 4),
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -179,29 +189,6 @@ class SettingsScreen extends ConsumerWidget {
 }
 
 // ── Section header ───────────────────────────────────────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label, required this.textTheme});
-
-  final String label;
-  final TextTheme textTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8, top: 4),
-      child: Text(
-        label.toUpperCase(),
-        style: textTheme.labelSmall?.copyWith(
-          color: cs.primary,
-          letterSpacing: 1.1,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
 
 // ── Word target stepper ──────────────────────────────────────────────────────
 

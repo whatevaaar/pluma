@@ -136,7 +136,7 @@ class DocumentTile extends StatelessWidget {
   String _formatDate(DateTime dt) {
     if (dt.isToday) return 'Hoy';
     if (dt.isYesterday) return 'Ayer';
-    return '${dt.day}/${dt.month}/${dt.year}';
+    return dt.toSpanishMediumDate();
   }
 }
 

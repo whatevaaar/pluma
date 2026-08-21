@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pluma/core/extensions/number_ext.dart';
 import 'package:pluma/features/statistics/domain/daily_stats.dart';
 import 'package:pluma/features/statistics/presentation/statistics_notifier.dart';
+import 'package:pluma/shared/widgets/section_header.dart';
 
 // ---------------------------------------------------------------------------
 // Heatmap constants
@@ -49,40 +50,23 @@ class _StatsBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
-        const _SectionLabel('Hoy'),
+        const SectionHeader(label: 'Hoy'),
         const SizedBox(height: 12),
         _TodayCard(stats: stats),
         const SizedBox(height: 24),
-        const _SectionLabel('Racha'),
+        const SectionHeader(label: 'Racha'),
         const SizedBox(height: 12),
         _StreakCard(stats: stats),
         const SizedBox(height: 24),
-        const _SectionLabel('Actividad'),
+        const SectionHeader(label: 'Actividad'),
         const SizedBox(height: 12),
         _HeatmapCard(stats: stats),
         const SizedBox(height: 24),
-        const _SectionLabel('Totales'),
+        const SectionHeader(label: 'Totales'),
         const SizedBox(height: 12),
         _StatsGrid(stats: stats),
         const SizedBox(height: 32),
       ],
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            letterSpacing: 1.2,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
     );
   }
 }

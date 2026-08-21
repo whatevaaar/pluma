@@ -7,12 +7,14 @@ class EmptyState extends StatelessWidget {
     required this.title,
     required this.subtitle,
     super.key,
+    this.icon,
     this.action,
     this.actionLabel,
   });
 
   final String title;
   final String subtitle;
+  final IconData? icon;
   final VoidCallback? action;
   final String? actionLabel;
 
@@ -26,6 +28,10 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (icon != null) ...[
+              Icon(icon, size: 56, color: colorScheme.primary.withAlpha(140)),
+              const SizedBox(height: 20),
+            ],
             Text(
               title,
               style: AppTextStyles.uiTitle.copyWith(

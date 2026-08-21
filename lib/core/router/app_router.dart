@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pluma/features/documents/presentation/library_screen.dart';
@@ -17,20 +18,27 @@ GoRouter appRouter(Ref ref) {
       ShellRoute(
         builder: (context, state, child) => _AppShell(child: child),
         routes: [
+          // NoTransitionPage on each tab: the directional shared-axis
+          // animation is owned by _AppShell so it can pick the slide direction
+          // from the relative tab index. A per-route transition here would
+          // fight it.
           GoRoute(
             path: '/library',
             name: 'library',
-            builder: (context, state) => const LibraryScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: LibraryScreen()),
           ),
           GoRoute(
             path: '/statistics',
             name: 'statistics',
-            builder: (context, state) => const StatisticsScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: StatisticsScreen()),
           ),
           GoRoute(
             path: '/settings',
             name: 'settings',
-            builder: (context, state) => const SettingsScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: SettingsScreen()),
           ),
         ],
       ),
@@ -54,38 +62,64 @@ GoRouter appRouter(Ref ref) {
   );
 }
 
-class _AppShell extends StatelessWidget {
-  const _AppShell({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: _BottomNav(
-        currentPath: GoRouterState.of(context).uri.path,
-      ),
-    );
-  }
-}
-
-class _BottomNav extends StatelessWidget {
-  const _BottomNav({required this.currentPath});
-
-  final String currentPath;
-
-  @override
-  Widget build(BuildContext context) {
-    final index = switch (currentPath) {
-      final p when p.startsWith('/library') => 0,
+int _tabIndexForPath(String path) => switch (path) {
       final p when p.startsWith('/statistics') => 1,
       final p when p.startsWith('/settings') => 2,
       _ => 0,
     };
 
+class _AppShell extends StatefulWidget {
+  const _AppShell({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<_AppShell> {
+  int _previousIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final index = _tabIndexForPath(GoRouterState.of(context).uri.path);
+    // Slide direction follows the tab bar's spatial layout: moving to a
+    // higher-index tab enters from the right, a lower-index tab from the left.
+    final reverse = index < _previousIndex;
+    _previousIndex = index;
+
+    return Scaffold(
+      body: PageTransitionSwitcher(
+        duration: const Duration(milliseconds: 280),
+        reverse: reverse,
+        transitionBuilder: (child, primary, secondary) => SharedAxisTransition(
+          animation: primary,
+          secondaryAnimation: secondary,
+          transitionType: SharedAxisTransitionType.horizontal,
+          fillColor: Colors.transparent,
+          child: child,
+        ),
+        // Key by tab index so the switcher animates only on tab changes, not
+        // on in-tab rebuilds.
+        child: KeyedSubtree(
+          key: ValueKey(index),
+          child: widget.child,
+        ),
+      ),
+      bottomNavigationBar: _BottomNav(currentIndex: index),
+    );
+  }
+}
+
+class _BottomNav extends StatelessWidget {
+  const _BottomNav({required this.currentIndex});
+
+  final int currentIndex;
+
+  @override
+  Widget build(BuildContext context) {
     return NavigationBar(
-      selectedIndex: index,
+      selectedIndex: currentIndex,
       onDestinationSelected: (i) {
         switch (i) {
           case 0:
@@ -99,14 +133,17 @@ class _BottomNav extends StatelessWidget {
       destinations: const [
         NavigationDestination(
           icon: Icon(Icons.menu_book_outlined),
+          selectedIcon: Icon(Icons.menu_book),
           label: 'Escritos',
         ),
         NavigationDestination(
           icon: Icon(Icons.bar_chart_outlined),
+          selectedIcon: Icon(Icons.bar_chart),
           label: 'Estadísticas',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
+          selectedIcon: Icon(Icons.settings),
           label: 'Ajustes',
         ),
       ],

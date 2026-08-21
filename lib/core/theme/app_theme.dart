@@ -73,6 +73,20 @@ abstract final class AppTheme {
         inversePrimary: accent,
       ),
       scaffoldBackgroundColor: surface,
+      // Solid accent FAB with a white glyph. Without this, M3 falls back to
+      // primaryContainer (accent at ~12% alpha), which renders as a washed-out
+      // pale fill — the "blurred, boring gray" write button.
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: accent,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        focusElevation: 2,
+        hoverElevation: 3,
+        highlightElevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: surface,
         foregroundColor: onSurface,

@@ -105,6 +105,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
           if (!isSearching && docs.isEmpty && state.projects.isEmpty) {
             return EmptyState(
+              icon: Icons.auto_stories_outlined,
               title: 'Tu historia empieza aquí',
               subtitle: 'Crea tu primer documento y empieza a escribir.',
               actionLabel: 'Crear documento',
@@ -187,7 +188,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         key: const Key('new_document_fab'),
         onPressed: () => unawaited(_createAndOpen(context, notifier)),
         tooltip: 'Nuevo documento',
-        child: const Icon(Icons.edit_outlined),
+        child: const Icon(Icons.edit_rounded),
       ),
     );
   }

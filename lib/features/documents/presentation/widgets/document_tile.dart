@@ -85,31 +85,36 @@ class DocumentTile extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 4),
-                if (onMenuTap != null)
-                  GestureDetector(
-                    onTap: onMenuTap,
-                    behavior: HitTestBehavior.opaque,
-                    child: Icon(
-                      Icons.more_vert,
-                      size: 18,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  )
-                else if (onFavoriteTap != null)
-                  GestureDetector(
-                    onTap: onFavoriteTap,
-                    behavior: HitTestBehavior.opaque,
-                    child: Icon(
-                      document.isFavorite
-                          ? Icons.bookmark
-                          : Icons.bookmark_border,
-                      size: 18,
-                      color: document.isFavorite
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Favorite indicator: rendered only when starred, so
+                    // favorites are visible at a glance in the list. Tapping
+                    // it removes the document from favorites.
+                    if (document.isFavorite && onFavoriteTap != null)
+                      _IconTap(
+                        icon: Icons.bookmark,
+                        color: colorScheme.primary,
+                        onTap: onFavoriteTap!,
+                        tooltip: 'Quitar de favoritos',
+                      ),
+                    if (onMenuTap != null)
+                      _IconTap(
+                        icon: Icons.more_vert,
+                        color: colorScheme.onSurfaceVariant,
+                        onTap: onMenuTap!,
+                        tooltip: 'Más opciones',
+                      )
+                    else if (onFavoriteTap != null && !document.isFavorite)
+                      _IconTap(
+                        icon: Icons.bookmark_border,
+                        color: colorScheme.onSurfaceVariant,
+                        onTap: onFavoriteTap!,
+                        tooltip: 'Añadir a favoritos',
+                      ),
+                  ],
+                ),
               ],
             ),
           ],
@@ -133,5 +138,33 @@ class DocumentTile extends StatelessWidget {
     if (dt.isYesterday) return 'Ayer';
     return '${dt.day}/${dt.month}/${dt.year}';
   }
+}
 
+/// A compact 18px trailing icon with a padded, rippling tap area (~30px) so
+/// the tap target is comfortable without inflating the row height.
+class _IconTap extends StatelessWidget {
+  const _IconTap({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    this.tooltip,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = InkResponse(
+      onTap: onTap,
+      radius: 22,
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Icon(icon, size: 18, color: color),
+      ),
+    );
+    return tooltip != null ? Tooltip(message: tooltip, child: button) : button;
+  }
 }

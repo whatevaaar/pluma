@@ -11,6 +11,26 @@ import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 class PlumaApp extends ConsumerWidget {
   const PlumaApp({super.key});
 
+  /// Localizations delegates for the whole app.
+  ///
+  /// [FlutterQuillLocalizations.delegate] is REQUIRED: flutter_quill's toolbar
+  /// buttons call `context.loc` during build and throw
+  /// MissingFlutterQuillLocalizationException if it is absent — which renders
+  /// as a blank gray bar in release mode (the default ErrorWidget). Kept as a
+  /// named constant so the regression test in test/app_test.dart can assert
+  /// the delegate stays registered and that WritingToolbar renders under it.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = [
+    FlutterQuillLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ];
+
+  static const List<Locale> supportedLocales = [
+    Locale('es'),
+    Locale('en'),
+  ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider).value ?? const AppSettings();
@@ -23,20 +43,8 @@ class PlumaApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(settings),
       themeMode: settings.themeMode,
       routerConfig: router,
-      localizationsDelegates: const [
-        // Required by flutter_quill's standalone toolbar buttons: they call
-        // context.loc during build and throw MissingFlutterQuillLocalization
-        // if this delegate is absent — which renders as a blank gray bar in
-        // release mode (the default ErrorWidget).
-        FlutterQuillLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('es'),
-        Locale('en'),
-      ],
+      localizationsDelegates: localizationsDelegates,
+      supportedLocales: supportedLocales,
     );
   }
 }

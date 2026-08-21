@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
+import 'package:pluma/features/settings/presentation/app_version_provider.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -149,9 +150,15 @@ class SettingsScreen extends ConsumerWidget {
                     children: [
                       const Icon(Icons.edit_note_rounded, size: 20),
                       const SizedBox(width: 8),
-                      Text('Pluma v0.1.0',
-                          style: tt.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600)),
+                      Text(
+                        // .value is null only for the brief async load; fall
+                        // back to the bare name rather than a stale hardcoded
+                        // version.
+                        'Pluma ${ref.watch(appVersionProvider).value ?? ''}'
+                            .trimRight(),
+                        style: tt.bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),

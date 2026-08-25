@@ -93,25 +93,12 @@ class DocumentRepositoryImpl implements DocumentRepository {
 
   @override
   Future<void> rename(String id, String title) {
-    return _docsDao.upsert(
-      DocumentsCompanion(
-        id: Value(id),
-        title: Value(title),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
+    return _docsDao.rename(id, title, DateTime.now());
   }
 
   @override
   Future<void> softDelete(String id) {
-    return _docsDao.upsert(
-      DocumentsCompanion(
-        id: Value(id),
-        isDeleted: const Value(true),
-        deletedAt: Value(DateTime.now()),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
+    return _docsDao.softDelete(id, DateTime.now());
   }
 
   @override

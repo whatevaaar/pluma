@@ -84,6 +84,25 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase>
         .write(companion);
   }
 
+  // Rename / soft-delete both target existing rows, so they use UPDATE for the
+  // same reason as updateContent: insertOnConflictUpdate would fail Drift's
+  // isInserting validation (title/content/createdAt absent) and throw silently.
+  Future<void> rename(String id, String title, DateTime updatedAt) {
+    return (update(documents)..where((d) => d.id.equals(id))).write(
+      DocumentsCompanion(title: Value(title), updatedAt: Value(updatedAt)),
+    );
+  }
+
+  Future<void> softDelete(String id, DateTime deletedAt) {
+    return (update(documents)..where((d) => d.id.equals(id))).write(
+      DocumentsCompanion(
+        isDeleted: const Value(true),
+        deletedAt: Value(deletedAt),
+        updatedAt: Value(deletedAt),
+      ),
+    );
+  }
+
   Future<void> updateFavorite(String id, {required bool isFavorite}) {
     return (update(documents)..where((d) => d.id.equals(id))).write(
       DocumentsCompanion(isFavorite: Value(isFavorite)),

@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' hide EditorState;
+import 'package:flutter_quill/flutter_quill.dart' hide Document, EditorState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pluma/core/theme/app_text_styles.dart';
 import 'package:pluma/core/theme/writing_theme_colors.dart';
+import 'package:pluma/features/documents/domain/document.dart';
 import 'package:pluma/features/editor/data/document_exporter.dart';
 import 'package:pluma/features/editor/presentation/editor_notifier.dart';
 import 'package:pluma/features/editor/presentation/poem_card_screen.dart';
@@ -497,13 +498,34 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
     );
   }
 
-  void _openPoemCard(BuildContext context, EditorState state) {
+  /// Flushes pending edits, then hands the freshly-saved document to [export].
+  /// TXT/PDF export from [Document.plainText], which only reflects the last
+  /// save — without this they'd miss the latest keystrokes.
+  Future<void> _exportFresh(
+    Future<void> Function(Document document) export,
+  ) async {
+    final notifier = ref.read(editorProvider(widget.documentId).notifier);
+    await notifier.saveNow();
+    final fresh = ref.read(editorProvider(widget.documentId)).value;
+    if (fresh == null) return;
+    await export(fresh.document);
+  }
+
+  Future<void> _openPoemCard(BuildContext context, EditorState state) async {
+    // Flush pending edits first: state.document only carries the last *saved*
+    // plainText, while the live text lives in the controller. Without this the
+    // poem card renders a stale snapshot (missing the most recent keystrokes).
+    final notifier = ref.read(editorProvider(widget.documentId).notifier);
+    await notifier.saveNow();
+    final fresh = ref.read(editorProvider(widget.documentId)).value ?? state;
+
     final fontFamily =
         ref.read(settingsProvider).value?.editorFont.fontFamily;
-    Navigator.of(context).push(
+    if (!context.mounted) return;
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => PoemCardScreen(
-          document: state.document,
+          document: fresh.document,
           fontFamily: fontFamily,
         ),
       ),
@@ -556,7 +578,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                 title: const Text('Compartir como imagen'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _openPoemCard(context, state);
+                  unawaited(_openPoemCard(context, state));
                 },
               ),
               ListTile(
@@ -564,7 +586,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                 title: const Text('Exportar como TXT'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  unawaited(DocumentExporter.exportAsTxt(state.document));
+                  unawaited(_exportFresh(DocumentExporter.exportAsTxt));
                 },
               ),
               ListTile(
@@ -585,7 +607,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                 title: const Text('Exportar como PDF'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  unawaited(DocumentExporter.exportAsPdf(state.document));
+                  unawaited(_exportFresh(DocumentExporter.exportAsPdf));
                 },
               ),
             ],

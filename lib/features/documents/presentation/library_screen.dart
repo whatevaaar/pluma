@@ -134,7 +134,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (_, i) {
                         final project = state.projects[i];
-                        return ProjectCard(project: project);
+                        final count = state.documents
+                            .where((d) => d.projectId == project.id)
+                            .length;
+                        return ProjectCard(
+                          project: project,
+                          documentCount: count,
+                          onTap: () => context.pushNamed(
+                            'project',
+                            pathParameters: {'projectId': project.id},
+                          ),
+                        );
                       },
                     ),
                   ),

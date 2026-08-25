@@ -2,6 +2,7 @@ import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pluma/features/documents/presentation/library_screen.dart';
+import 'package:pluma/features/documents/presentation/project_screen.dart';
 import 'package:pluma/features/editor/presentation/editor_screen.dart';
 import 'package:pluma/features/settings/presentation/settings_screen.dart';
 import 'package:pluma/features/statistics/presentation/statistics_screen.dart';
@@ -48,6 +49,14 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) {
           final documentId = state.pathParameters['documentId']!;
           return EditorScreen(documentId: documentId);
+        },
+      ),
+      GoRoute(
+        path: '/project/:projectId',
+        name: 'project',
+        builder: (context, state) {
+          final projectId = state.pathParameters['projectId']!;
+          return ProjectScreen(projectId: projectId);
         },
       ),
       GoRoute(

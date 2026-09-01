@@ -32,4 +32,11 @@ extension DateTimeExt on DateTime {
   /// (instead of a locale-dependent or bare numeric format).
   String toSpanishMediumDate() =>
       '$day ${_spanishMonthsAbbr[month - 1]} $year';
+
+  /// "Hoy" / "Ayer" / "21 ago 2026" — the app's relative day label.
+  String toRelativeSpanishDate() {
+    if (isToday) return 'Hoy';
+    if (isYesterday) return 'Ayer';
+    return toSpanishMediumDate();
+  }
 }

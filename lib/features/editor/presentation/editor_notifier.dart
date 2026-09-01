@@ -1,15 +1,13 @@
 import 'dart:async' show Timer, unawaited;
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-
-import 'package:flutter/widgets.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pluma/core/constants/app_constants.dart';
 import 'package:pluma/core/extensions/string_ext.dart';
 import 'package:pluma/features/documents/domain/document.dart';
 import 'package:pluma/features/editor/data/editor_repository_impl.dart';
+import 'package:pluma/features/editor/data/quill_delta.dart';
 import 'package:pluma/features/editor/domain/editor_repository.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 import 'package:pluma/features/statistics/data/statistics_repository_impl.dart';
@@ -141,7 +139,7 @@ class EditorNotifier extends _$EditorNotifier {
     _lastSavedWordCount = doc.wordCount;
     _loadedContent = doc.content;
 
-    final controller = _buildController(doc.content)
+    final controller = buildQuillController(doc.content)
       ..addListener(_onContentChanged);
 
     // Read settings once at initialization — not watched to avoid recreating
@@ -158,23 +156,6 @@ class EditorNotifier extends _$EditorNotifier {
       sessionWordsDelta: 0,
       sessionStartWordCount: doc.wordCount,
     );
-  }
-
-  quill.QuillController _buildController(String deltaJson) {
-    try {
-      final raw = deltaJson.isNotEmpty
-          ? deltaJson
-          : r'{"ops":[{"insert":"\n"}]}';
-      final ops =
-          (jsonDecode(raw) as Map<String, dynamic>)['ops'] as List<dynamic>;
-      final doc = quill.Document.fromJson(ops);
-      return quill.QuillController(
-        document: doc,
-        selection: const TextSelection.collapsed(offset: 0),
-      );
-    } on Object catch (_) {
-      return quill.QuillController.basic();
-    }
   }
 
   void _onContentChanged() {
@@ -208,7 +189,7 @@ class EditorNotifier extends _$EditorNotifier {
     final wc = plain.wordCount;
     final cc = plain.charCount;
     final deltaJson =
-        jsonEncode({'ops': current.controller.document.toDelta().toJson()});
+        encodeQuillDelta(current.controller.document);
     final delta = wc - _lastSavedWordCount;
     _lastSavedWordCount = wc;
     // Accumulate to field before the first await so concurrent _saveNow()
@@ -294,7 +275,7 @@ class EditorNotifier extends _$EditorNotifier {
     final current = state.value;
     if (current == null) return;
     final content =
-        jsonEncode({'ops': current.controller.document.toDelta().toJson()});
+        encodeQuillDelta(current.controller.document);
     final plain = current.controller.document.toPlainText();
     await _snapshot(
       content: content,
@@ -313,7 +294,7 @@ class EditorNotifier extends _$EditorNotifier {
     if (current == null) return;
 
     final currentContent =
-        jsonEncode({'ops': current.controller.document.toDelta().toJson()});
+        encodeQuillDelta(current.controller.document);
     final currentPlain = current.controller.document.toPlainText();
     await _snapshot(
       content: currentContent,
@@ -323,7 +304,7 @@ class EditorNotifier extends _$EditorNotifier {
     );
 
     current.controller.removeListener(_onContentChanged);
-    final controller = _buildController(version.content)
+    final controller = buildQuillController(version.content)
       ..addListener(_onContentChanged);
     final plain = controller.document.toPlainText();
     _lastSavedWordCount = plain.wordCount;

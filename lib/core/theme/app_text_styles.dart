@@ -14,18 +14,6 @@ abstract final class AppTextStyles {
     letterSpacing: 0.1,
   );
 
-  static const TextStyle editorBodySmall = TextStyle(
-    fontFamily: 'Merriweather',
-    fontSize: 15,
-    height: 1.7,
-  );
-
-  static const TextStyle editorBodyLarge = TextStyle(
-    fontFamily: 'Merriweather',
-    fontSize: 20,
-    height: 1.8,
-  );
-
   // --- UI chrome (Inter) ---
 
   static const TextStyle uiHeadline = TextStyle(

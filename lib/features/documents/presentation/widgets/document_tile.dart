@@ -125,18 +125,12 @@ class DocumentTile extends StatelessWidget {
 
   String _buildSubtitle() {
     final preview = document.plainText.trim();
-    final date = _formatDate(document.updatedAt);
+    final date = document.updatedAt.toRelativeSpanishDate();
     if (preview.isEmpty) return date;
     final short = preview.length > 60
         ? '${preview.substring(0, 60)}…'
         : preview;
     return '$date · $short';
-  }
-
-  String _formatDate(DateTime dt) {
-    if (dt.isToday) return 'Hoy';
-    if (dt.isYesterday) return 'Ayer';
-    return dt.toSpanishMediumDate();
   }
 }
 

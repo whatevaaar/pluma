@@ -42,17 +42,6 @@ extension WritingThemeX on WritingTheme {
         WritingTheme.forest => 'Bosque',
         WritingTheme.midnight => 'Noche',
       };
-
-  /// Short evocative descriptor shown under the theme name.
-  String get tagline => switch (this) {
-        WritingTheme.default_ => 'Limpio y neutro',
-        WritingTheme.shakespeare => 'Vitela y tinta',
-        WritingTheme.villaurrutia => 'Nocturno de azul',
-        WritingTheme.davila => 'Penumbra inquietante',
-        WritingTheme.sepia => 'Pergamino cálido',
-        WritingTheme.forest => 'Bosque profundo',
-        WritingTheme.midnight => 'Medianoche',
-      };
 }
 
 @freezed

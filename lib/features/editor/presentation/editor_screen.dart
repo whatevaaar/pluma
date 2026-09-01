@@ -32,7 +32,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   final _titleController = TextEditingController();
   final _scrollController = ScrollController();
   final _editorFocusNode = FocusNode();
-  bool _toolbarVisible = true;
 
   // Tracks which controller has the typewriter listener attached.
   QuillController? _typewriterController;
@@ -66,10 +65,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
         ref.read(editorProvider(widget.documentId).notifier).saveNow(),
       );
     }
-  }
-
-  void _onEditorTap() {
-    if (!_toolbarVisible) setState(() => _toolbarVisible = true);
   }
 
   // --- Typewriter mode ---
@@ -192,16 +187,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
             appBar: focusMode
                 ? null
                 : _buildAppBar(context, state, writingColors),
-            body: GestureDetector(
-              onTap: _onEditorTap,
-              behavior: HitTestBehavior.translucent,
-              // Cross-fade the writing surface when the theme changes so
-              // switching palettes feels like a gentle dissolve, not a snap.
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 420),
-                curve: Curves.easeOut,
-                color: writingColors.background,
-                child: Stack(
+            // Cross-fade the writing surface when the theme changes so
+            // switching palettes feels like a gentle dissolve, not a snap.
+            body: AnimatedContainer(
+              duration: const Duration(milliseconds: 420),
+              curve: Curves.easeOut,
+              color: writingColors.background,
+              child: Stack(
                   children: [
                     Column(
                       children: [
@@ -282,8 +274,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                 ),
               ),
             ),
-          ),
-        );
+          );
       },
     );
   }

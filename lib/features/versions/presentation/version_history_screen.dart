@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pluma/core/extensions/datetime_ext.dart';
+import 'package:pluma/features/editor/data/quill_delta.dart';
 import 'package:pluma/features/editor/presentation/editor_notifier.dart';
 import 'package:pluma/features/versions/data/versions_repository_impl.dart';
 import 'package:pluma/features/versions/domain/document_version.dart';
@@ -167,7 +166,7 @@ class _VersionPreviewScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = _buildReadOnlyController(version.content);
+    final controller = buildQuillController(version.content, readOnly: true);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Vista previa')),
@@ -198,19 +197,6 @@ class _VersionPreviewScreen extends ConsumerWidget {
     );
   }
 
-  quill.QuillController _buildReadOnlyController(String deltaJson) {
-    try {
-      final ops =
-          (jsonDecode(deltaJson) as Map<String, dynamic>)['ops'] as List;
-      return quill.QuillController(
-        document: quill.Document.fromJson(ops),
-        selection: const TextSelection.collapsed(offset: 0),
-        readOnly: true,
-      );
-    } on Object catch (_) {
-      return quill.QuillController.basic()..readOnly = true;
-    }
-  }
 }
 
 class _Badge extends StatelessWidget {
@@ -242,10 +228,5 @@ class _Badge extends StatelessWidget {
 String _formatTimestamp(DateTime dt) {
   final h = dt.hour.toString().padLeft(2, '0');
   final m = dt.minute.toString().padLeft(2, '0');
-  final day = dt.isToday
-      ? 'Hoy'
-      : dt.isYesterday
-          ? 'Ayer'
-          : dt.toSpanishMediumDate();
-  return '$day · $h:$m';
+  return '${dt.toRelativeSpanishDate()} · $h:$m';
 }

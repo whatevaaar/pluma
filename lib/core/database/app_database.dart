@@ -8,6 +8,7 @@ import 'package:pluma/features/documents/data/documents_dao.dart';
 import 'package:pluma/features/documents/data/projects_dao.dart';
 import 'package:pluma/features/statistics/data/statistics_dao.dart';
 import 'package:pluma/features/trash/data/trash_dao.dart';
+import 'package:pluma/features/versions/data/versions_dao.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_database.g.dart';
@@ -91,24 +92,52 @@ class UserGoals extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+// Point-in-time snapshots of a document's content, so edits made under the
+// silent 3s autosave are recoverable. Written on a throttled schedule and at
+// session end (see EditorNotifier). Pruned to the newest N per document.
+@DataClassName('DocumentVersionRow')
+class DocumentVersions extends Table {
+  TextColumn get id => text()();
+  TextColumn get documentId => text().references(Documents, #id)();
+  // Quill Delta JSON snapshot — same format as Documents.content
+  TextColumn get content => text()();
+  // Derived plain text — used for the preview and word count without decoding
+  TextColumn get plainText => text()();
+  IntColumn get wordCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime()();
+  // 'session' | 'auto' | 'manual' | 'pre-restore'
+  TextColumn get reason => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
 
 @DriftDatabase(
-  tables: [Projects, Documents, WritingSessions, DailyStats, UserGoals],
-  daos: [DocumentsDao, ProjectsDao, StatisticsDao, TrashDao],
+  tables: [
+    Projects,
+    Documents,
+    WritingSessions,
+    DailyStats,
+    UserGoals,
+    DocumentVersions,
+  ],
+  daos: [DocumentsDao, ProjectsDao, StatisticsDao, TrashDao, VersionsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
+          await _createVersionsIndex();
           // FTS5 virtual table for full-text search over documents.
           // Using content= to keep the index in sync with the documents table.
           await customStatement('''
@@ -143,9 +172,18 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           // Each migration step is explicit — never DROP, always ADD/ALTER.
           // Add new steps here as schemaVersion increments.
+          if (from < 2) {
+            await m.createTable(documentVersions);
+            await _createVersionsIndex();
+          }
         },
       );
 
+  // Index for listing/pruning a document's versions newest-first.
+  Future<void> _createVersionsIndex() => customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_document_versions_doc_created '
+        'ON document_versions (document_id, created_at)',
+      );
 }
 
 QueryExecutor _openConnection() {

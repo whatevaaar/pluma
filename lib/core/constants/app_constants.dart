@@ -10,6 +10,13 @@ abstract final class AppConstants {
   // Documentos en papelera se purgan permanentemente después de este período
   static const trashRetentionDays = 30;
 
+  // Historial de versiones: intervalo mínimo entre snapshots automáticos
+  // mientras se edita un documento en una misma sesión
+  static const versionSnapshotInterval = Duration(minutes: 10);
+
+  // Máximo de versiones conservadas por documento (las más antiguas se podan)
+  static const maxVersionsPerDocument = 30;
+
   // Umbral de palabras para considerar un documento "grande" (requiere lazy
   // rendering)
   static const largeDocumentWordThreshold = 4000;

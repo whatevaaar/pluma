@@ -16,6 +16,7 @@ import 'package:pluma/features/editor/presentation/widgets/writing_settings_shee
 import 'package:pluma/features/editor/presentation/widgets/writing_toolbar.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
+import 'package:pluma/features/versions/presentation/version_history_screen.dart';
 
 class EditorScreen extends ConsumerStatefulWidget {
   const EditorScreen({required this.documentId, super.key});
@@ -628,6 +629,34 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
                   ref
                       .read(editorProvider(widget.documentId).notifier)
                       .togglePoetryMode();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.history),
+                title: const Text('Historial de versiones'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => VersionHistoryScreen(
+                        documentId: widget.documentId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.bookmark_add_outlined),
+                title: const Text('Guardar versión ahora'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await ref
+                      .read(editorProvider(widget.documentId).notifier)
+                      .saveVersionNow();
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Versión guardada')),
+                  );
                 },
               ),
               ListTile(

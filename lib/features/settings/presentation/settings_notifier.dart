@@ -75,4 +75,14 @@ class SettingsNotifier extends _$SettingsNotifier {
     final s = state.value ?? const AppSettings();
     return saveSettings(s.copyWith(showWordCount: enabled));
   }
+
+  Future<void> setReminderEnabled(bool enabled) {
+    final s = state.value ?? const AppSettings();
+    return saveSettings(s.copyWith(reminderEnabled: enabled));
+  }
+
+  Future<void> setReminderTime(String time) {
+    final s = state.value ?? const AppSettings();
+    return saveSettings(s.copyWith(reminderTime: time));
+  }
 }

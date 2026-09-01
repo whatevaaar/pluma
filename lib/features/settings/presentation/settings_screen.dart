@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pluma/features/backup/presentation/data_settings_section.dart';
+import 'package:pluma/features/reminders/presentation/reminder_settings_section.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/app_version_provider.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
@@ -156,6 +157,14 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+
+          // ── Recordatorios ────────────────────────────────────────────────
+          const SectionHeader(
+            label: 'Recordatorios',
+            padding: EdgeInsets.only(left: 4, bottom: 8, top: 4),
+          ),
+          const ReminderSettingsSection(),
           const SizedBox(height: 16),
 
           // ── Datos ────────────────────────────────────────────────────────

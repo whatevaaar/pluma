@@ -59,8 +59,23 @@ abstract class AppSettings with _$AppSettings {
     @Default(true) bool autocorrect,
     @Default(false) bool typewriterMode,
     @Default(true) bool showWordCount,
+    // Daily writing reminder (local notification).
+    @Default(false) bool reminderEnabled,
+    // Time of day for the reminder, "HH:mm" (24h).
+    @Default('20:00') String reminderTime,
   }) = _AppSettings;
+
+  const AppSettings._();
 
   factory AppSettings.fromJson(Map<String, dynamic> json) =>
       _$AppSettingsFromJson(json);
+
+  /// Hour component (0–23) of [reminderTime]; falls back to 20 if malformed.
+  int get reminderHour => int.tryParse(reminderTime.split(':').first) ?? 20;
+
+  /// Minute component (0–59) of [reminderTime]; falls back to 0 if malformed.
+  int get reminderMinute {
+    final parts = reminderTime.split(':');
+    return parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+  }
 }

@@ -54,9 +54,10 @@ class DocumentsDao extends DatabaseAccessor<AppDatabase>
       readsFrom: {documents},
     ).get();
 
-    return results
-        .map((row) => DocumentRow.fromJson(row.data))
-        .toList();
+    // Map raw FTS rows via the table's own mapper, which reads the DB column
+    // names (snake_case). DocumentRow.fromJson expects camelCase JSON keys and
+    // would throw on every result.
+    return results.map((row) => documents.map(row.data)).toList();
   }
 
   // Wraps each whitespace-separated token in FTS5 phrase quotes so special

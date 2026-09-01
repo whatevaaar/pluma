@@ -59,4 +59,25 @@ void main() {
     final project = await repo.findProjectById(id);
     expect(project?.name, 'Poemas');
   });
+
+  // Regression: searchFullText mapped FTS rows with DocumentRow.fromJson
+  // (camelCase keys) over snake_case DB columns, so any match threw
+  // "type 'Null' is not a subtype of type 'String'".
+  test('search returns matching documents without crashing', () async {
+    await db.documentsDao.insert(
+      DocumentsCompanion.insert(
+        id: 'doc-search',
+        title: 'Nota',
+        content: r'{"ops":[{"insert":"ballena azul\n"}]}',
+        plainText: 'ballena azul',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
+    );
+
+    final results = await repo.search('ballena');
+
+    expect(results.map((d) => d.id), contains('doc-search'));
+    expect(results.single.plainText, 'ballena azul');
+  });
 }

@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:pluma/features/backup/data/backup_dao.dart';
 import 'package:pluma/features/documents/data/documents_dao.dart';
 import 'package:pluma/features/documents/data/projects_dao.dart';
 import 'package:pluma/features/statistics/data/statistics_dao.dart';
@@ -125,7 +126,14 @@ class DocumentVersions extends Table {
     UserGoals,
     DocumentVersions,
   ],
-  daos: [DocumentsDao, ProjectsDao, StatisticsDao, TrashDao, VersionsDao],
+  daos: [
+    DocumentsDao,
+    ProjectsDao,
+    StatisticsDao,
+    TrashDao,
+    VersionsDao,
+    BackupDao,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());

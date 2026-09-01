@@ -4,6 +4,7 @@ import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/app_version_provider.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 import 'package:pluma/shared/widgets/section_header.dart';
+import 'package:pluma/shared/widgets/writing_theme_picker.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -34,31 +35,42 @@ class SettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Tema de la app', style: tt.bodyMedium),
+                  Text('Tema', style: tt.bodyMedium),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Aplica a toda la app',
+                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
                   const SizedBox(height: 12),
-                  Center(
-                    child: SegmentedButton<ThemeMode>(
-                      segments: const [
-                        ButtonSegment(
-                          value: ThemeMode.light,
-                          label: Text('Claro'),
-                          icon: Icon(Icons.light_mode_outlined),
-                        ),
-                        ButtonSegment(
-                          value: ThemeMode.system,
-                          label: Text('Auto'),
-                          icon: Icon(Icons.brightness_auto_outlined),
-                        ),
-                        ButtonSegment(
-                          value: ThemeMode.dark,
-                          label: Text('Oscuro'),
-                          icon: Icon(Icons.dark_mode_outlined),
-                        ),
-                      ],
-                      selected: {settings.themeMode},
-                      onSelectionChanged: (selected) =>
-                          notifier.setThemeMode(selected.first),
-                    ),
+                  WritingThemePicker(
+                    selected: settings.writingTheme,
+                    onSelected: notifier.setWritingTheme,
+                  ),
+
+                  // Light/dark only matters for the neutral default theme;
+                  // author palettes carry their own fixed brightness.
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    child: settings.writingTheme == WritingTheme.default_
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 16),
+                              const Divider(height: 1),
+                              const SizedBox(height: 16),
+                              Text('Claridad', style: tt.bodyMedium),
+                              const SizedBox(height: 12),
+                              Center(
+                                child: _ClarityToggle(
+                                  selected: settings.themeMode,
+                                  onChanged: notifier.setThemeMode,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox(width: double.infinity),
                   ),
                 ],
               ),
@@ -188,7 +200,39 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-// ── Section header ───────────────────────────────────────────────────────────
+// ── Clarity (light/dark) toggle ──────────────────────────────────────────────
+
+class _ClarityToggle extends StatelessWidget {
+  const _ClarityToggle({required this.selected, required this.onChanged});
+
+  final ThemeMode selected;
+  final ValueChanged<ThemeMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<ThemeMode>(
+      segments: const [
+        ButtonSegment(
+          value: ThemeMode.light,
+          label: Text('Claro'),
+          icon: Icon(Icons.light_mode_outlined),
+        ),
+        ButtonSegment(
+          value: ThemeMode.system,
+          label: Text('Auto'),
+          icon: Icon(Icons.brightness_auto_outlined),
+        ),
+        ButtonSegment(
+          value: ThemeMode.dark,
+          label: Text('Oscuro'),
+          icon: Icon(Icons.dark_mode_outlined),
+        ),
+      ],
+      selected: {selected},
+      onSelectionChanged: (s) => onChanged(s.first),
+    );
+  }
+}
 
 // ── Word target stepper ──────────────────────────────────────────────────────
 

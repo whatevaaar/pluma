@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pluma/core/theme/app_colors.dart';
 import 'package:pluma/core/theme/app_text_styles.dart';
+import 'package:pluma/core/theme/writing_theme_colors.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
 
 /// Builds Material 3 ThemeData for light and dark modes.
@@ -30,6 +31,24 @@ abstract final class AppTheme {
         settings: settings,
       );
 
+  /// Builds the app-wide theme from an author/writing palette. Used when a
+  /// non-default `WritingTheme` is selected so the whole app — not just the
+  /// editor — adopts the palette. Each palette has a fixed brightness.
+  static ThemeData forWriting(WritingThemeColors colors, AppSettings settings) {
+    final isDark = colors.brightness == Brightness.dark;
+    return _build(
+      brightness: colors.brightness,
+      surface: colors.background,
+      surfaceVariant: colors.surfaceVariant,
+      onSurface: colors.onBackground,
+      onSurfaceVariant: colors.onBackgroundVariant,
+      accent: colors.accent,
+      error: isDark ? AppColors.errorDark : AppColors.error,
+      appBarBackground: colors.appBarBackground,
+      settings: settings,
+    );
+  }
+
   static ThemeData _build({
     required Brightness brightness,
     required Color surface,
@@ -39,6 +58,7 @@ abstract final class AppTheme {
     required Color accent,
     required Color error,
     required AppSettings settings,
+    Color? appBarBackground,
   }) {
     final isDark = brightness == Brightness.dark;
     final systemUiOverlayStyle = isDark
@@ -88,7 +108,7 @@ abstract final class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: surface,
+        backgroundColor: appBarBackground ?? surface,
         foregroundColor: onSurface,
         elevation: 0,
         scrolledUnderElevation: 1,

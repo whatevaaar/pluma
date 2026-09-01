@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:pluma/core/router/app_router.dart';
 import 'package:pluma/core/theme/app_theme.dart';
+import 'package:pluma/core/theme/writing_theme_colors.dart';
 import 'package:pluma/features/settings/domain/app_settings.dart';
 import 'package:pluma/features/settings/presentation/settings_notifier.dart';
 
@@ -36,12 +37,33 @@ class PlumaApp extends ConsumerWidget {
     final settings = ref.watch(settingsProvider).value ?? const AppSettings();
     final router = ref.watch(appRouterProvider);
 
+    // The default theme follows the light/dark preference. Any author palette
+    // takes over the whole app with its own fixed brightness, so both theme
+    // slots point at it and themeMode becomes irrelevant.
+    final isDefaultTheme = settings.writingTheme == WritingTheme.default_;
+    final ThemeData lightTheme;
+    final ThemeData darkTheme;
+    final ThemeMode themeMode;
+    if (isDefaultTheme) {
+      lightTheme = AppTheme.light(settings);
+      darkTheme = AppTheme.dark(settings);
+      themeMode = settings.themeMode;
+    } else {
+      final palette = AppTheme.forWriting(
+        WritingThemeColors.resolve(settings.writingTheme, Brightness.light),
+        settings,
+      );
+      lightTheme = palette;
+      darkTheme = palette;
+      themeMode = ThemeMode.light;
+    }
+
     return MaterialApp.router(
       title: 'Pluma',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(settings),
-      darkTheme: AppTheme.dark(settings),
-      themeMode: settings.themeMode,
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: themeMode,
       routerConfig: router,
       localizationsDelegates: localizationsDelegates,
       supportedLocales: supportedLocales,

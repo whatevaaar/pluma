@@ -17,12 +17,22 @@ class WritingToolbar extends StatelessWidget {
     required this.controller,
     this.backgroundColor,
     this.foregroundColor,
+    this.onHideKeyboard,
+    this.keyboardVisible = false,
     super.key,
   });
 
   final QuillController controller;
   final Color? backgroundColor;
   final Color? foregroundColor;
+
+  /// Called when the trailing "hide keyboard" button is tapped. When null the
+  /// button is never shown.
+  final VoidCallback? onHideKeyboard;
+
+  /// Whether the soft keyboard is currently visible. The hide-keyboard button
+  /// animates in only while the keyboard is up.
+  final bool keyboardVisible;
 
   static const double _buttonSize = 38;
   static const double _iconSize = 20;
@@ -102,6 +112,35 @@ class WritingToolbar extends StatelessWidget {
       children.addAll(groups[g]);
     }
 
+    // Trailing, pinned-right control to dismiss the keyboard. Cross-fades and
+    // shrinks in/out so the toolbar reflows smoothly with the keyboard.
+    final showHideKeyboard = onHideKeyboard != null && keyboardVisible;
+    final hideKeyboard = AnimatedSize(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.centerRight,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: showHideKeyboard ? 1 : 0,
+        child: showHideKeyboard
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _Divider(color: fgColor.withAlpha(38)),
+                  IconButton(
+                    icon: const Icon(Icons.keyboard_hide_outlined),
+                    iconSize: _iconSize,
+                    style: styleFrom(selected: false),
+                    tooltip: 'Ocultar teclado',
+                    onPressed: onHideKeyboard,
+                  ),
+                  const SizedBox(width: 4),
+                ],
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
+
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -110,18 +149,25 @@ class WritingToolbar extends StatelessWidget {
           top: BorderSide(color: fgColor.withAlpha(38), width: 0.5),
         ),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            // Fill the width so the row centers when it fits; overflow scrolls.
-            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: children,
+      child: Row(
+        children: [
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  // Fill width so the row centers when it fits; else scrolls.
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: children,
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+          hideKeyboard,
+        ],
       ),
     );
   }

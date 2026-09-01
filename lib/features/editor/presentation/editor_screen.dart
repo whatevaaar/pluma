@@ -194,56 +194,91 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
             body: GestureDetector(
               onTap: _onEditorTap,
               behavior: HitTestBehavior.translucent,
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                      if (!focusMode)
-                        _buildTitleField(context, state, writingColors),
-
-                      Expanded(
-                        child: _buildEditor(
-                          context,
-                          state,
-                          settings,
-                          writingColors,
+              // Cross-fade the writing surface when the theme changes so
+              // switching palettes feels like a gentle dissolve, not a snap.
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 420),
+                curve: Curves.easeOut,
+                color: writingColors.background,
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        // Title collapses smoothly when entering focus mode.
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.topCenter,
+                          child: focusMode
+                              ? const SizedBox(width: double.infinity)
+                              : _buildTitleField(context, state, writingColors),
                         ),
-                      ),
 
-                      if (!focusMode) ...[
-                        WritingToolbar(
-                          controller: state.controller,
-                          backgroundColor: writingColors.appBarBackground,
-                          foregroundColor: writingColors.onBackground,
+                        Expanded(
+                          child: _buildEditor(
+                            context,
+                            state,
+                            settings,
+                            writingColors,
+                          ),
                         ),
-                        WordCountBar(
-                          wordCount: state.document.wordCount,
-                          charCount: state.document.charCount,
-                          isSaving: state.isSaving,
-                          targetWordCount: state.document.targetWordCount,
-                          backgroundColor: writingColors.appBarBackground,
-                          foregroundColor: writingColors.onBackground,
+
+                        // Toolbar + word count slide/collapse together when
+                        // focus mode toggles.
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.bottomCenter,
+                          child: focusMode
+                              ? const SizedBox(width: double.infinity)
+                              : Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    WritingToolbar(
+                                      controller: state.controller,
+                                      backgroundColor:
+                                          writingColors.appBarBackground,
+                                      foregroundColor:
+                                          writingColors.onBackground,
+                                      keyboardVisible:
+                                          MediaQuery.viewInsetsOf(context)
+                                                  .bottom >
+                                              0,
+                                      onHideKeyboard: _editorFocusNode.unfocus,
+                                    ),
+                                    WordCountBar(
+                                      wordCount: state.document.wordCount,
+                                      charCount: state.document.charCount,
+                                      isSaving: state.isSaving,
+                                      targetWordCount:
+                                          state.document.targetWordCount,
+                                      backgroundColor:
+                                          writingColors.appBarBackground,
+                                      foregroundColor:
+                                          writingColors.onBackground,
+                                    ),
+                                  ],
+                                ),
+                        ),
+
+                        // Keyboard inset: expands to exactly the keyboard
+                        // height so the toolbar stack is always above the
+                        // keyboard. With resizeToAvoidBottomInset: false the
+                        // body's MediaQuery preserves the raw viewInsets, so
+                        // this SizedBox tracks the keyboard animation frame by
+                        // frame with no gray gap.
+                        SizedBox(
+                          height: MediaQuery.viewInsetsOf(context).bottom,
                         ),
                       ],
+                    ),
 
-                      // Keyboard inset: expands to exactly the keyboard height
-                      // so the toolbar stack is always above the keyboard.
-                      // With resizeToAvoidBottomInset: false the body's
-                      // MediaQuery preserves the raw viewInsets, so this
-                      // SizedBox tracks
-                      // the keyboard animation frame by frame with no gray gap.
-                      SizedBox(
-                        height: MediaQuery.viewInsetsOf(context).bottom,
-                      ),
-                    ],
-                  ),
-
-                  // In focus mode the app bar and toolbar are hidden, so these
-                  // floating controls are the only way to exit focus mode and
-                  // dismiss the keyboard.
-                  if (focusMode)
-                    _buildFocusModeControls(context, writingColors),
-                ],
+                    // In focus mode the app bar and toolbar are hidden, so
+                    // these floating controls are the only way to exit focus
+                    // mode and dismiss the keyboard.
+                    _buildFocusModeControls(context, writingColors, focusMode),
+                  ],
+                ),
               ),
             ),
           ),
@@ -291,6 +326,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
   Widget _buildFocusModeControls(
     BuildContext context,
     WritingThemeColors writingColors,
+    bool focusMode,
   ) {
     final notifier = ref.read(editorProvider(widget.documentId).notifier);
     final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
@@ -314,28 +350,49 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
       );
     }
 
+    // Kept mounted and faded so it dissolves in/out with focus mode rather than
+    // popping. IgnorePointer disables taps while hidden.
     return Positioned(
       top: 0,
       right: 0,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (keyboardVisible)
-                button(
-                  icon: Icons.keyboard_hide_outlined,
-                  tooltip: 'Ocultar teclado',
-                  onPressed: _editorFocusNode.unfocus,
+          child: IgnorePointer(
+            ignoring: !focusMode,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              offset: focusMode ? Offset.zero : const Offset(0, -0.4),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 260),
+                opacity: focusMode ? 1 : 0,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      child: keyboardVisible
+                          ? Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: button(
+                                icon: Icons.keyboard_hide_outlined,
+                                tooltip: 'Ocultar teclado',
+                                onPressed: _editorFocusNode.unfocus,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    button(
+                      icon: Icons.close_fullscreen_outlined,
+                      tooltip: 'Salir de pantalla completa',
+                      onPressed: notifier.toggleFocusMode,
+                    ),
+                  ],
                 ),
-              const SizedBox(width: 8),
-              button(
-                icon: Icons.close_fullscreen_outlined,
-                tooltip: 'Salir de pantalla completa',
-                onPressed: notifier.toggleFocusMode,
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -391,6 +448,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen>
           vertical: state.focusModeEnabled ? 60 : 16,
         ),
         placeholder: 'Empieza a escribir…',
+        // Per-theme caret + selection colors. flutter_quill reads its cursor
+        // color from this TextSelectionThemeData, so each writing palette gets
+        // a high-contrast insertion point that stays clearly visible.
+        textSelectionThemeData: TextSelectionThemeData(
+          cursorColor: writingColors.cursor,
+          selectionColor: writingColors.selection,
+          selectionHandleColor: writingColors.cursor,
+        ),
         customStyles: DefaultStyles(
           paragraph: DefaultTextBlockStyle(
             AppTextStyles.editorBody.copyWith(

@@ -18,6 +18,17 @@ abstract interface class DocumentRepository {
 
   Future<String> create({String? projectId, String? title});
 
+  /// Creates a document pre-populated with content (e.g. from an import).
+  /// Returns the new document id.
+  Future<String> createWithContent({
+    required String title,
+    required String content,
+    required String plainText,
+    required int wordCount,
+    required int charCount,
+    String? projectId,
+  });
+
   Future<void> save(Document document);
 
   Future<void> rename(String id, String title);

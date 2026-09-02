@@ -72,6 +72,33 @@ class DocumentRepositoryImpl implements DocumentRepository {
   }
 
   @override
+  Future<String> createWithContent({
+    required String title,
+    required String content,
+    required String plainText,
+    required int wordCount,
+    required int charCount,
+    String? projectId,
+  }) async {
+    final id = const Uuid().v4();
+    final now = DateTime.now();
+    await _docsDao.insert(
+      DocumentsCompanion.insert(
+        id: id,
+        projectId: Value(projectId),
+        title: title,
+        content: content,
+        plainText: plainText,
+        wordCount: Value(wordCount),
+        charCount: Value(charCount),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    return id;
+  }
+
+  @override
   Future<void> save(Document document) {
     return _docsDao.upsert(
       DocumentsCompanion(

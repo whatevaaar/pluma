@@ -5,6 +5,7 @@ import 'package:pluma/features/documents/data/document_repository_impl.dart';
 import 'package:pluma/features/documents/domain/document.dart';
 import 'package:pluma/features/documents/domain/document_repository.dart';
 import 'package:pluma/features/documents/domain/project.dart';
+import 'package:pluma/features/import/data/document_importer.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'library_notifier.freezed.dart';
@@ -81,6 +82,17 @@ class LibraryNotifier extends _$LibraryNotifier {
 
   Future<String> createDocument({String? projectId}) {
     return _repo.create(projectId: projectId);
+  }
+
+  /// Persists a document parsed from an imported file. Returns the new id.
+  Future<String> importDocument(ImportedDocument imported) {
+    return _repo.createWithContent(
+      title: imported.title,
+      content: imported.content,
+      plainText: imported.plainText,
+      wordCount: imported.wordCount,
+      charCount: imported.charCount,
+    );
   }
 
   Future<void> deleteDocument(String id) {

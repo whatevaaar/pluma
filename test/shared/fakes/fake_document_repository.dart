@@ -73,6 +73,33 @@ class FakeDocumentRepository implements DocumentRepository {
   }
 
   @override
+  Future<String> createWithContent({
+    required String title,
+    required String content,
+    required String plainText,
+    required int wordCount,
+    required int charCount,
+    String? projectId,
+  }) async {
+    final id = const Uuid().v4();
+    final now = DateTime.now();
+    _docs[id] = Document(
+      id: id,
+      projectId: projectId,
+      title: title,
+      content: content,
+      plainText: plainText,
+      wordCount: wordCount,
+      charCount: charCount,
+      isFavorite: false,
+      isDeleted: false,
+      createdAt: now,
+      updatedAt: now,
+    );
+    return id;
+  }
+
+  @override
   Future<void> save(Document document) async {
     _docs[document.id] = document;
   }

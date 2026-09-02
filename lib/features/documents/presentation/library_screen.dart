@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +12,7 @@ import 'package:pluma/features/documents/domain/project.dart';
 import 'package:pluma/features/documents/presentation/library_notifier.dart';
 import 'package:pluma/features/documents/presentation/widgets/document_tile.dart';
 import 'package:pluma/features/documents/presentation/widgets/project_card.dart';
+import 'package:pluma/features/import/data/document_importer.dart';
 import 'package:pluma/shared/widgets/empty_state.dart';
 import 'package:pluma/shared/widgets/section_header.dart';
 
@@ -81,6 +84,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   child: ListTile(
                     leading: Icon(Icons.create_new_folder_outlined),
                     title: Text('Nueva carpeta'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: _MenuAction.importDocument,
+                  child: ListTile(
+                    leading: Icon(Icons.file_upload_outlined),
+                    title: Text('Importar TXT / Markdown'),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -218,8 +229,40 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     switch (action) {
       case _MenuAction.newProject:
         _showNewProjectDialog(context, notifier);
+      case _MenuAction.importDocument:
+        unawaited(_importAndOpen(context, notifier));
       case _MenuAction.trash:
         unawaited(context.pushNamed('trash'));
+    }
+  }
+
+  Future<void> _importAndOpen(
+    BuildContext context,
+    LibraryNotifier notifier,
+  ) async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['txt', 'md', 'markdown'],
+    );
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+
+    try {
+      final bytes = await file.readAsBytes();
+      final imported = parseImportedFile(
+        filename: file.name,
+        raw: utf8.decode(bytes),
+      );
+      final id = await notifier.importDocument(imported);
+      if (!context.mounted) return;
+      unawaited(
+        context.pushNamed('editor', pathParameters: {'documentId': id}),
+      );
+    } on Object {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo importar el archivo.')),
+      );
     }
   }
 
@@ -482,7 +525,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 }
 
-enum _MenuAction { newProject, trash }
+enum _MenuAction { newProject, importDocument, trash }
 
 const List<(SortOrder, String)> _sortOptions = [
   (SortOrder.updatedDesc, 'Modificado (reciente primero)'),
